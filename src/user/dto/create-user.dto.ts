@@ -10,7 +10,6 @@ import {
 } from 'class-validator';
 
 export enum UserRole {
-  USER = 'USER',
   ADMIN = 'ADMIN',
   COACH = 'COACH',
   SUPER_ADMIN = 'SUPER_ADMIN',
@@ -35,7 +34,7 @@ export class CreateUserDto {
   })
   phone?: string;
 
-  @ApiProperty({ example: 'john@example.com', description: 'Email manzili' })
+  @ApiProperty({ example: 'john@gmail.com', description: 'Email manzili' })
   @IsEmail({}, { message: 'Email noto‘g‘ri kiritilgan' })
   email: string;
 
@@ -49,7 +48,7 @@ export class CreateUserDto {
   @Length(8, 32, { message: 'Parol uzunligi 8 dan 32 gacha bo‘lishi kerak' })
   confirm_password: string;
 
-  @ApiProperty({ enum: Role, example: Role.USER })
+  @ApiProperty({ enum: Role, example: Role.PARENT })
   @IsEnum(Role)
   role: Role;
 }

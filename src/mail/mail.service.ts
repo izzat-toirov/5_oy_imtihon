@@ -1,18 +1,24 @@
-// src/email/email.service.ts
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { transporter } from './transporter';
+import { User } from '../../generated/prisma';
+
 
 @Injectable()
-export class EmailService {
-  async sendMail(to: string, subject: string, html: string) {
-    const info = await transporter.sendMail({
-      from: `"My App" <${process.env.SMTP_USER}>`, // ko‘rinadigan nom
-      to,
-      subject,
-      html,
-    });
+export class MailService {
+    constructor(private readonly mailllerService: MailerService){}
 
-    console.log('📧 Email yuborildi: %s', info.messageId);
-    return info;
-  }
+    async sendOtp(email: string, otp: string) {
+      await this.mailllerService.sendMail({
+        to: email,
+        subject: 'InBook uchun tasdiqlash kodi (OTP)',
+        template: '', // agar siz `handlebars` shablon ishlatsangiz, bu yerga qo‘shing
+        html: `
+          <p>Assalomu alaykum!</p>
+          <p>Siz tizimga kirish uchun OTP kod oldingiz:</p>
+          <h2>${otp}</h2>
+          <p>Kod faqat 1 daqiqa amal qiladi.</p>
+        `
+      });
+    }
+    
 }

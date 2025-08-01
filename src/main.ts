@@ -19,6 +19,7 @@ async function bootstrap() {
     .setDescription('Foydalanuvchi avtorizatsiyasi va roʻyxatdan oʻtish')
     .setVersion('1.0')
     .addTag('auth')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

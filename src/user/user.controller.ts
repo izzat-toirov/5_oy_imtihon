@@ -3,14 +3,24 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
-import { SingleSuperAdminGuard } from '../common/guards/super_admin.guard';
 import { JwtGuard } from '../common/guards/jwt.guard';
+import { RoleGuard } from '../common/guards/super_admin.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(SingleSuperAdminGuard)
+  @ApiBearerAuth()
+  @Roles('SUPER_ADMIN')
+  @UseGuards(RoleGuard)
+  @UseGuards(JwtGuard)
+  @Post('CreateAdmin')
+  createAdmin(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createAdmin(createUserDto);
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -34,5 +44,10 @@ export class UserController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @Get('activate/:link')
+  activateUser(@Param('link') link: string) {
+    return this.userService.activateUser(link);
   }
 }

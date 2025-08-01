@@ -6,7 +6,10 @@ export class SigninUserDto {
   @ApiProperty()
   @IsString()
   readonly email: string;
-  @ApiProperty({ example: 'P@ssw0rd123' })
+  @ApiProperty({ example: 'MySecureP@ss1' })
   @IsString()
   readonly password: string;
+  @ApiProperty({ example: 'MySecureP@ss1' })
+  @IsString()
+  readonly confirm_password: string;
 }

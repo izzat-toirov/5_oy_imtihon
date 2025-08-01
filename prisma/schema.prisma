@@ -15,7 +15,6 @@ datasource db {
 }
 
 enum Role {
-  USER
   ADMIN
   COACH
   PLAYER
@@ -30,11 +29,12 @@ model User {
   email              String  @unique @db.VarChar(50)
   hashedPassword     String
   is_active          Boolean @default(false)
-  role               Role    @default(USER)
+  role               Role    @default(PARENT)
   hashedRefreshToken String?
+  activation_link    String?  @db.VarChar(255)
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }

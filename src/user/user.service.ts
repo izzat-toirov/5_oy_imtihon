@@ -3,6 +3,7 @@ import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 import { Role } from '../../generated/prisma';
 
 @Injectable()
@@ -10,81 +11,170 @@ export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createSuperAdmin() {
-    const existingSuperAdmins = await this.prismaService.user.findMany({
-      where: { role: Role.SUPER_ADMIN },
-    });
-  
-    if (existingSuperAdmins.length > 0) {
-      console.log('❗ Super admin allaqachon mavjud');
-      return existingSuperAdmins[0]; 
+    try {
+      const existingSuperAdmins = await this.prismaService.user.findMany({
+        where: { role: Role.SUPER_ADMIN },
+      });
+
+      if (existingSuperAdmins.length > 0) {
+        console.log('❗ Super admin allaqachon mavjud');
+        return existingSuperAdmins[0];
+      }
+      const superAdmin = await this.prismaService.user.create({
+        data: {
+          full_name: 'Super Admin',
+          email: 'admin@example.com',
+          phone: '+998901112233',
+          hashedPassword: await bcrypt.hash('P@ssw0rd123', 10),
+          role: Role.SUPER_ADMIN,
+          is_active: true,
+          activation_link: uuidv4(),
+        },
+      });
+
+      console.log('✅ Super admin yaratildi');
+      return superAdmin;
+    } catch (error) {
+      return error;
     }
-  
-    const superAdmin = await this.prismaService.user.create({
-      data: {
-        full_name: 'Super Admin',
-        email: 'admin@example.com',
-        phone: '+998901112233',
-        hashedPassword: await bcrypt.hash('P@ssw0rd123', 10),
-        role: Role.SUPER_ADMIN,
-        is_active: true,
-      },
-    });
-  
-    console.log('✅ Super admin yaratildi');
-    return superAdmin;
+  }
+
+  async createAdmin(createUserDto: CreateUserDto) {
+    try {
+      const { full_name, phone, email, password, confirm_password, role } =
+        createUserDto;
+
+      if (password !== confirm_password) {
+        throw new BadRequestException('Parollar mos emas');
+      }
+
+      const existingEmail = await this.prismaService.user.findUnique({
+        where: { email },
+      });
+      const activation_link = uuidv4();
+      if (existingEmail) {
+        throw new BadRequestException(
+          'Bu email bilan foydalanuvchi allaqachon mavjud',
+        );
+      }
+
+      const existingPhone = await this.prismaService.user.findUnique({
+        where: { phone },
+      });
+      if (existingPhone) {
+        throw new BadRequestException(
+          'Bu telefon raqami allaqachon ishlatilgan',
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      return this.prismaService.user.create({
+        data: {
+          full_name,
+          phone,
+          email,
+          hashedPassword,
+          is_active: false,
+          role,
+          activation_link,
+        },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async create(createUserDto: CreateUserDto) {
-    const { full_name, phone, email, password, confirm_password, role } =
-      createUserDto;
-
-    if (password !== confirm_password) {
-      throw new BadRequestException('Parollar mos emas');
-    }
-
-    const existingEmail = await this.prismaService.user.findUnique({
-      where: { email },
-    });
-    if (existingEmail) {
-      throw new BadRequestException(
-        'Bu email bilan foydalanuvchi allaqachon mavjud',
-      );
-    }
-
-    const existingPhone = await this.prismaService.user.findUnique({
-      where: { phone },
-    });
-    if (existingPhone) {
-      throw new BadRequestException('Bu telefon raqami allaqachon ishlatilgan');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    return this.prismaService.user.create({
-      data: {
+    try {
+      const {
         full_name,
         phone,
         email,
-        hashedPassword,
-        is_active: false,
-        role,
-      },
-    });
+        password,
+        confirm_password,
+        role = Role.PARENT, // Default qilib qo‘yamiz
+      } = createUserDto;
+
+      // Faqat PARENT roliga ruxsat beramiz
+      if (role !== Role.PARENT) {
+        throw new BadRequestException(
+          'Faqat PARENT roli bilan foydalanuvchi yaratish mumkin',
+        );
+      }
+
+      if (password !== confirm_password) {
+        throw new BadRequestException('Parollar mos emas');
+      }
+
+      const existingEmail = await this.prismaService.user.findUnique({
+        where: { email },
+      });
+      if (existingEmail) {
+        throw new BadRequestException(
+          'Bu email bilan foydalanuvchi allaqachon mavjud',
+        );
+      }
+
+      const existingPhone = await this.prismaService.user.findUnique({
+        where: { phone },
+      });
+      if (existingPhone) {
+        throw new BadRequestException(
+          'Bu telefon raqami allaqachon ishlatilgan',
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const activation_link = uuidv4();
+
+      return this.prismaService.user.create({
+        data: {
+          full_name,
+          phone,
+          email,
+          hashedPassword,
+          is_active: false,
+          role: Role.PARENT,
+          activation_link,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error.message || 'Foydalanuvchi yaratishda xatolik',
+      );
+    }
   }
 
   async findAll() {
-    return await this.prismaService.user.findMany();
+    try {
+      return await this.prismaService.user.findMany();
+    } catch (error) {
+      return error;
+    }
   }
 
   async findOne(id: number) {
-    return await this.prismaService.user.findUnique({ where: { id } });
+    try {
+      const user = await this.prismaService.user.findUnique({ where: { id } });
+      if (!user) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return user;
+    } catch (error) {
+      return error;
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    return await this.prismaService.user.update({
-      where: { id },
-      data: updateUserDto,
-    });
+    try {
+      return await this.prismaService.user.update({
+        where: { id },
+        data: updateUserDto,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async remove(id: number) {
@@ -92,23 +182,62 @@ export class UserService {
   }
 
   async findUserByEmail(email: string) {
-    return await this.prismaService.user.findUnique({ where: { email } });
+    try {
+      return await this.prismaService.user.findUnique({ where: { email } });
+    } catch (error) {
+      return error;
+    }
   }
   async updateRefreshToken(id: number, hashedRefreshToken: string) {
-    const user = await this.prismaService.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new BadRequestException('Foydalanuvchi topilmadi');
-    }
+    try {
+      const user = await this.prismaService.user.findUnique({ where: { id } });
+      if (!user) {
+        throw new BadRequestException('Foydalanuvchi topilmadi');
+      }
 
-    return await this.prismaService.user.update({
-      where: { id },
-      data: { hashedRefreshToken },
-    });
+      return await this.prismaService.user.update({
+        where: { id },
+        data: { hashedRefreshToken },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async findByRole(role: Role) {
-    return this.prismaService.user.findMany({
-      where: { role },
+    try {
+      return this.prismaService.user.findMany({
+        where: { role },
+      });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async activateUser(link: string) {
+    if (!link) {
+      throw new BadRequestException('Activation link not found');
+    }
+
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        activation_link: link,
+        is_active: false,
+      },
     });
+
+    if (!user) {
+      throw new BadRequestException('User already activated or link invalid');
+    }
+
+    const updatedUser = await this.prismaService.user.update({
+      where: { id: user.id },
+      data: { is_active: true },
+    });
+
+    return {
+      message: 'User activated successfully',
+      is_active: updatedUser.is_active,
+    };
   }
 }
