@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { Role } from '../../generated/prisma';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class UserService {
@@ -23,9 +28,9 @@ export class UserService {
       const superAdmin = await this.prismaService.user.create({
         data: {
           full_name: 'Super Admin',
-          email: 'admin@example.com',
+          email: 'admin@gmail.com',
           phone: '+998901112233',
-          hashedPassword: await bcrypt.hash('P@ssw0rd123', 10),
+          hashedPassword: await bcrypt.hash('MySecureP@ss1', 10),
           role: Role.SUPER_ADMIN,
           is_active: true,
           activation_link: uuidv4(),
@@ -39,52 +44,6 @@ export class UserService {
     }
   }
 
-  async createAdmin(createUserDto: CreateUserDto) {
-    try {
-      const { full_name, phone, email, password, confirm_password, role } =
-        createUserDto;
-
-      if (password !== confirm_password) {
-        throw new BadRequestException('Parollar mos emas');
-      }
-
-      const existingEmail = await this.prismaService.user.findUnique({
-        where: { email },
-      });
-      const activation_link = uuidv4();
-      if (existingEmail) {
-        throw new BadRequestException(
-          'Bu email bilan foydalanuvchi allaqachon mavjud',
-        );
-      }
-
-      const existingPhone = await this.prismaService.user.findUnique({
-        where: { phone },
-      });
-      if (existingPhone) {
-        throw new BadRequestException(
-          'Bu telefon raqami allaqachon ishlatilgan',
-        );
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      return this.prismaService.user.create({
-        data: {
-          full_name,
-          phone,
-          email,
-          hashedPassword,
-          is_active: false,
-          role,
-          activation_link,
-        },
-      });
-    } catch (error) {
-      return error;
-    }
-  }
-
   async create(createUserDto: CreateUserDto) {
     try {
       const {
@@ -93,10 +52,9 @@ export class UserService {
         email,
         password,
         confirm_password,
-        role = Role.PARENT, // Default qilib qo‘yamiz
+        role = Role.PARENT,
       } = createUserDto;
 
-      // Faqat PARENT roliga ruxsat beramiz
       if (role !== Role.PARENT) {
         throw new BadRequestException(
           'Faqat PARENT roli bilan foydalanuvchi yaratish mumkin',
@@ -178,16 +136,20 @@ export class UserService {
   }
 
   async remove(id: number) {
-    return this.prismaService.user.delete({ where: { id } });
-  }
-
-  async findUserByEmail(email: string) {
     try {
-      return await this.prismaService.user.findUnique({ where: { email } });
-    } catch (error) {
-      return error;
+      const existingUser = await this.prismaService.user.findUnique({ where: { id } });
+  
+    if (!existingUser) {
+      return { error: 'Foydalanuvchi topilmadi' };
     }
+    } catch (error) {
+     return error; 
+    }
+  
+    return await this.prismaService.user.delete({ where: { id } });
   }
+  
+
   async updateRefreshToken(id: number, hashedRefreshToken: string) {
     try {
       const user = await this.prismaService.user.findUnique({ where: { id } });

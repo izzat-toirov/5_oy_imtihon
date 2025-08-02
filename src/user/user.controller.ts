@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,15 +20,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @ApiBearerAuth()
-  @Roles('SUPER_ADMIN')
-  @UseGuards(RoleGuard)
-  @UseGuards(JwtGuard)
-  @Post('CreateAdmin')
-  createAdmin(@Body() createUserDto: CreateUserDto) {
-    return this.userService.createAdmin(createUserDto);
-  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -50,4 +50,5 @@ export class UserController {
   activateUser(@Param('link') link: string) {
     return this.userService.activateUser(link);
   }
+
 }

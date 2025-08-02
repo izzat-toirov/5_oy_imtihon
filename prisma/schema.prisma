@@ -31,10 +31,76 @@ model User {
   is_active          Boolean @default(false)
   role               Role    @default(PARENT)
   hashedRefreshToken String?
-  activation_link    String?  @db.VarChar(255)
+  activation_link    String? @db.VarChar(255)
+  resetPasswordToken     String?  @db.Text
+  resetPasswordTokenExpiry DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Players   Players[]
+  Coaches   Coaches[]
+
+  @@map("users")
+}
+
+model Players {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  birth_date DateTime
+  position   String   @db.VarChar(50)
+  jersey_no  Int
+  photo_url  String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("players")
+}
+
+model Coaches {
+  id         Int    @id @default(autoincrement())
+  user_id    Int
+  license_no String @db.VarChar(50)
+  experiense String @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  Teams Teams[]
+
+  @@map("coaches")
+}
+
+model Teams {
+  id        Int    @id @default(autoincrement())
+  name      String @db.VarChar(50)
+  coach_id  Int
+  age_group String @db.VarChar(50)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coach   Coaches   @relation(fields: [coach_id], references: [id], onDelete: Cascade)
+  Matches Matches[]
+
+  @@map("teams")
+}
+
+model Matches {
+  id         Int      @id @default(autoincrement())
+  team_id    Int
+  opponent   String   @db.VarChar(50)
+  match_Date DateTime
+  location   String   @db.VarChar(255)
+  result     String   @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Teams @relation(fields: [team_id], references: [id], onDelete: Cascade)
+
+  @@map("matches")
 }
