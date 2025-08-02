@@ -8,7 +8,8 @@ export class CoachesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createCoachDto: CreateCoachDto) {
-    const { user_id, license_no, experiense } = createCoachDto;
+    try {
+      const { user_id, license_no, experiense } = createCoachDto;
     const numericUserId = Number(user_id);
     const existingUser = await this.prismaService.user.findUnique({
       where: { id: numericUserId },
@@ -26,6 +27,9 @@ export class CoachesService {
         experiense,
       },
     });
+    } catch (error) {
+      return error;
+    }
   }
 
   async findAll() {
@@ -66,6 +70,17 @@ export class CoachesService {
   }
 
   async remove(id: number) {
-    return this.prismaService.coaches.delete({ where: { id } });
+    try {
+      const existingUser = await this.prismaService.coaches.findUnique({
+        where: { id },
+      });
+
+      if (!existingUser) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return await this.prismaService.coaches.delete({ where: { id } });
+    } catch (error) {
+      return error;
+    }
   }
 }

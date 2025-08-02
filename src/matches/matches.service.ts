@@ -8,7 +8,8 @@ export class MatchesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createMatchDto: CreateMatchDto) {
-    const { team_id, opponent, match_Date, location, result } = createMatchDto;
+    try {
+      const { team_id, opponent, match_Date, location, result } = createMatchDto;
     const numericUserId = Number(team_id);
     const existingUser = await this.prismaService.teams.findUnique({
       where: { id: numericUserId },
@@ -28,6 +29,9 @@ export class MatchesService {
         result,
       },
     });
+    } catch (error) {
+      return error;
+    }
   }
 
   async findAll() {
@@ -68,6 +72,17 @@ export class MatchesService {
   }
 
   async remove(id: number) {
-    return this.prismaService.matches.delete({ where: { id } });
+    try {
+      const existingUser = await this.prismaService.matches.findUnique({
+        where: { id },
+      });
+
+      if (!existingUser) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return await this.prismaService.matches.delete({ where: { id } });
+    } catch (error) {
+      return error;
+    }
   }
 }

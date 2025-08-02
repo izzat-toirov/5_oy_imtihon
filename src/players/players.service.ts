@@ -8,7 +8,8 @@ export class PlayersService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createPlayerDto: CreatePlayerDto, photo_url: string) {
-    const { user_id, birth_date, position, jersey_no } = createPlayerDto;
+    try {
+      const { user_id, birth_date, position, jersey_no } = createPlayerDto;
   
     const numericUserId = Number(user_id);
   
@@ -34,6 +35,9 @@ export class PlayersService {
         photo_url,
       },
     });
+    } catch (error) {
+      return error;
+    }
   }
   
 
@@ -76,6 +80,17 @@ export class PlayersService {
   }
 
   async remove(id: number) {
-    return this.prismaService.players.delete({ where: { id } });
+    try {
+      const existingUser = await this.prismaService.players.findUnique({
+        where: { id },
+      });
+
+      if (!existingUser) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return await this.prismaService.players.delete({ where: { id } });
+    } catch (error) {
+      return error;
+    }
   }
 }

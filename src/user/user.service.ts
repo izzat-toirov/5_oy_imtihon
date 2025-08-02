@@ -142,11 +142,11 @@ export class UserService {
     if (!existingUser) {
       return { error: 'Foydalanuvchi topilmadi' };
     }
+    return await this.prismaService.user.delete({ where: { id } });
     } catch (error) {
      return error; 
     }
   
-    return await this.prismaService.user.delete({ where: { id } });
   }
   
 

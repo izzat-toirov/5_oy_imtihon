@@ -9,6 +9,12 @@ import { join } from 'path';
 import { CoachesModule } from './coaches/coaches.module';
 import { TeamsModule } from './teams/teams.module';
 import { MatchesModule } from './matches/matches.module';
+import { TrainigsModule } from './trainigs/trainigs.module';
+import { PerformanceScoreModule } from './performance_score/performance_score.module';
+import { ParentModule } from './parent/parent.module';
+import { PlayerParentModule } from './player_parent/player_parent.module';
+import { TeamPlayersModule } from './team_players/team_players.module';
+import { TrainigAttendanceModule } from './trainig_attendance/trainig_attendance.module';
 
 @Module({
   imports: [
@@ -27,6 +33,12 @@ import { MatchesModule } from './matches/matches.module';
     CoachesModule,
     TeamsModule,
     MatchesModule,
+    TrainigsModule,
+    PerformanceScoreModule,
+    ParentModule,
+    PlayerParentModule,
+    TeamPlayersModule,
+    TrainigAttendanceModule,
   ],
   controllers: [],
   providers: [],
