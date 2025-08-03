@@ -7,6 +7,7 @@ import {
   IsEnum,
   Length,
   Matches,
+  IsPhoneNumber,
 } from 'class-validator';
 
 export enum UserRole {
@@ -28,10 +29,7 @@ export class CreateUserDto {
 
   @ApiProperty({ example: '+998901234567', description: 'Telefon raqami' })
   @IsString()
-  @Matches(/^\+998\d{9}$/, {
-    message:
-      'Telefon raqami +998 bilan boshlanib, 9 raqamdan iborat bo‘lishi kerak',
-  })
+  @IsPhoneNumber("UZ")
   phone?: string;
 
   @ApiProperty({ example: 'john@gmail.com', description: 'Email manzili' })
