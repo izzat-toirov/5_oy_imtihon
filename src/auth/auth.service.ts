@@ -260,9 +260,13 @@ export class AuthService {
       },
     });
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}?token=${token}`;
+    console.log(process.env.FRONTEND_URL);
+    
+    console.log(resetUrl);
+    
 
-    await this.mailService.sendResetPasswordEmail(user, resetUrl); // ❗ Bu metod mavjud bo‘lishi kerak
+    await this.mailService.sendResetPasswordEmail(user, resetUrl);
 
     return { message: 'Parolni tiklash havolasi emailingizga yuborildi.' };
   }
