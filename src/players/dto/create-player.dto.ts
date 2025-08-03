@@ -22,15 +22,4 @@ export class CreatePlayerDto {
   @IsInt()
   jersey_no: number;
 
-//   @ApiProperty({
-//     required: false,
-//     type: 'string',
-//     format: 'binary',
-//     description: 'Post rasmi (image)',
-//   })
-
-//   @Type(()=> String)
-//   @IsString()
-// //   @IsNotEmpty()
-//   photo_url: any;
 }

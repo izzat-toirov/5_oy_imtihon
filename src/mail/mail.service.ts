@@ -1,20 +1,17 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { Injectable } from "@nestjs/common";
 import { User } from "../../generated/prisma";
+import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
   async sendMail(user: User) {
-    const url = `${process.env.api_url}/api/user/activate/${user.activation_link}`;
-    const resetPasswordUrl = `${process.env.FRONTEND_URL}/reset-password?token=${user.resetPasswordToken}`;
+    const url = `${process.env.API_URL}/api/user/activate/${user.activation_link}`;
 
-    console.log(url);
-    
     await this.mailerService.sendMail({
       to: user.email,
-      subject: `Welcome to FOTTBALLACCADEMY!`,
+      subject: `Welcome to FOOTBALL ACADEMY!`,
       template: 'confirmation',
       context: {
         username: user.full_name,
@@ -22,6 +19,7 @@ export class MailService {
       },
     });
   }
+
   async sendResetPasswordEmail(user: User, resetPasswordUrl: string) {
     await this.mailerService.sendMail({
       to: user.email,
@@ -33,5 +31,4 @@ export class MailService {
       },
     });
   }
-  
 }

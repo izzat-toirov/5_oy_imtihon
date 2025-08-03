@@ -200,9 +200,14 @@ export class AuthService {
 
   async resetPasswordWithConfirm(dto: ResetPasswordDto) {
     const { token, password, confirmPassword } = dto;
-    if (!token) throw new BadRequestException('Token topilmadi');
-    if (password !== confirmPassword)
+  
+    if (!token) {
+      throw new BadRequestException('Token topilmadi');
+    }
+  
+    if (password !== confirmPassword) {
       throw new BadRequestException('Parollar mos emas');
+    }
   
     const user = await this.prismaService.user.findFirst({
       where: {
@@ -228,6 +233,7 @@ export class AuthService {
   
     return { message: 'Parol muvaffaqiyatli o‘zgartirildi' };
   }
+  
   
 
   async sendResetPasswordToken(email: string) {

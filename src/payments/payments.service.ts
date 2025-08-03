@@ -1,71 +1,73 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePerformanceScoreDto } from './dto/create-performance_score.dto';
-import { UpdatePerformanceScoreDto } from './dto/update-performance_score.dto';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class PerformanceScoreService {
+export class PaymentsService {
   constructor(private readonly prismaService: PrismaService) {}
-  async create(createPerformanceScoreDto: CreatePerformanceScoreDto) {
+  async create(createPaymentDto: CreatePaymentDto) {
     try {
       const {
+        parent_id,
         player_id,
-        coach_id,
-        date,
-        discipline,
-        physical,
-        technique,
+        amout,
+        payment_date,
+        method,
+        prelod,
+        reference,
+        status,
         notes,
-      } = createPerformanceScoreDto;
-  
+      } = createPaymentDto;
+
       const numericPlayerId = Number(player_id);
-      const numericCoachId = Number(coach_id);
-  
+      const numericParentId = Number(parent_id);
+
       const existingPlayer = await this.prismaService.players.findUnique({
         where: { id: numericPlayerId },
       });
-  
+
       if (!existingPlayer) {
         throw new NotFoundException(
           `Foydalanuvchi topilmadi: player_id = ${numericPlayerId}`,
         );
       }
-  
-      const existingCoach = await this.prismaService.coaches.findUnique({
-        where: { id: numericCoachId },
+
+      const existingCoach = await this.prismaService.parents.findUnique({
+        where: { id: numericParentId },
       });
-  
+
       if (!existingCoach) {
         throw new NotFoundException(
-          `Foydalanuvchi topilmadi: coach_id = ${numericCoachId}`,
+          `Foydalanuvchi topilmadi: parent_id = ${numericParentId}`,
         );
       }
-  
-      const newPerformance = await this.prismaService.performance_Score.create({
+      const newPerformance = await this.prismaService.payments.create({
         data: {
+          parent_id: numericParentId,
           player_id: numericPlayerId,
-          coach_id: numericCoachId,
-          date: new Date(date),
-          discipline,
-          physical,
-          technique,
+          amout,
+          payment_date: new Date(payment_date),
+          method,
+          prelod,
+          reference,
+          status,
           notes,
         },
       });
-  
+
       return newPerformance;
     } catch (error) {
       throw error;
     }
   }
-  
 
   async findAll() {
     try {
-      return await this.prismaService.performance_Score.findMany({
+      return await this.prismaService.payments.findMany({
         include: {
+          parent: true,
           player: true,
-          coach: true
         },
       });
     } catch (error) {
@@ -75,7 +77,7 @@ export class PerformanceScoreService {
 
   async findOne(id: number) {
     try {
-      const user = await this.prismaService.performance_Score.findUnique({
+      const user = await this.prismaService.payments.findUnique({
         where: { id },
       });
       if (!user) {
@@ -87,11 +89,14 @@ export class PerformanceScoreService {
     }
   }
 
-  async update(id: number, updatePerformanceScoreDto: UpdatePerformanceScoreDto) {
+  async update(
+    id: number,
+    updatePaymentDto: UpdatePaymentDto,
+  ) {
     try {
-      return await this.prismaService.performance_Score.update({
+      return await this.prismaService.payments.update({
         where: { id },
-        data: updatePerformanceScoreDto,
+        data: updatePaymentDto,
       });
     } catch (error) {
       return error;
@@ -100,16 +105,20 @@ export class PerformanceScoreService {
 
   async remove(id: number) {
     try {
-      const existingUser = await this.prismaService.performance_Score.findUnique({
-        where: { id },
-      });
+      const existingUser =
+        await this.prismaService.payments.findUnique({
+          where: { id },
+        });
 
       if (!existingUser) {
         return { error: 'Foydalanuvchi topilmadi' };
       }
-      return await this.prismaService.performance_Score.delete({ where: { id } });
+      return await this.prismaService.payments.delete({
+        where: { id },
+      });
     } catch (error) {
       return error;
     }
   }
+
 }

@@ -35,11 +35,12 @@ model User {
   resetPasswordToken       String?   @db.Text
   resetPasswordTokenExpiry DateTime?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Players   Players[]
-  Coaches   Coaches[]
-  Parents   Parents[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Players      Players[]
+  Coaches      Coaches[]
+  Parents      Parents[]
+  Notification Notification[]
 
   @@map("users")
 }
@@ -50,7 +51,6 @@ model Players {
   birth_date DateTime
   position   String   @db.VarChar(50)
   jersey_no  Int
-  photo_url  String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -60,6 +60,10 @@ model Players {
   Player_Parents     Player_Parents[]
   Team_Players       Team_Players[]
   Trainig_Attendance Trainig_Attendance[]
+  Payments           Payments[]
+  Match_Status       Match_Status[]
+  Injuries           Injuries[]
+  Player_Photo       Player_Photo[]
 
   @@map("players")
 }
@@ -108,7 +112,8 @@ model Matches {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  team Teams @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  team         Teams          @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  Match_Status Match_Status[]
 
   @@map("matches")
 }
@@ -159,6 +164,7 @@ model Parents {
 
   user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   Player_Parents Player_Parents[]
+  Payments       Payments[]
 
   @@map("parents")
 }
@@ -196,7 +202,7 @@ model Trainig_Attendance {
   id         Int    @id @default(autoincrement())
   trainig_id Int
   player_id  Int
-  status   String @db.VarChar(30)
+  status     String @db.VarChar(30)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -205,4 +211,85 @@ model Trainig_Attendance {
   player  Players  @relation(fields: [player_id], references: [id], onDelete: Cascade)
 
   @@map("trainig_Attendance")
+}
+
+model Payments {
+  id           Int      @id @default(autoincrement())
+  parent_id    Int
+  player_id    Int
+  amout        Decimal
+  payment_date DateTime
+  method       String   @db.VarChar(50)
+  prelod       String   @db.VarChar(50)
+  status       String   @db.VarChar(50)
+  reference    String   @db.VarChar(255)
+  notes        String   @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parents @relation(fields: [parent_id], references: [id], onDelete: Cascade)
+  player Players @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Notification {
+  id      Int     @id @default(autoincrement())
+  user_id Int
+  title   String  @db.VarChar(150)
+  message String  @db.VarChar(255)
+  is_read Boolean
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notification")
+}
+
+model Match_Status {
+  id           Int @id @default(autoincrement())
+  match_id     Int
+  player_id    Int
+  goals        Int @default(0)
+  assists      Int @default(0)
+  yellow_cards Int @default(0)
+  red_cards    Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  match  Matches @relation(fields: [match_id], references: [id], onDelete: Cascade)
+  player Players @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@map("match_Status")
+}
+
+model Injuries {
+  id            Int      @id @default(autoincrement())
+  player_id     Int
+  description   String   @db.VarChar(255)
+  injury_date   DateTime
+  recovery_date DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player Players @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@map("injuries")
+}
+
+model Player_Photo {
+  id        Int    @id @default(autoincrement())
+  player_id Int
+  photo_url String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  player Players @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@map("player_Photo")
 }

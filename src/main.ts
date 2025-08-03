@@ -22,7 +22,9 @@ async function start() {
     app.useStaticAssets(join(__dirname, '..', 'uploads'), {
       prefix: '/uploads/',
     });
-    app.useStaticAssets(join(__dirname, '..', 'public')); 
+    app.useStaticAssets(join(__dirname, '..', 'public'), {
+      prefix: '/public/'
+    }); 
 
     const config = new DocumentBuilder()
       .setTitle('inBook Project')

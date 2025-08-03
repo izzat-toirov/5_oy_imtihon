@@ -15,6 +15,11 @@ import { ParentModule } from './parent/parent.module';
 import { PlayerParentModule } from './player_parent/player_parent.module';
 import { TeamPlayersModule } from './team_players/team_players.module';
 import { TrainigAttendanceModule } from './trainig_attendance/trainig_attendance.module';
+import { PaymentsModule } from './payments/payments.module';
+import { NotificationModule } from './notification/notification.module';
+import { MatchStatusModule } from './match_status/match_status.module';
+import { InjuriesModule } from './injuries/injuries.module';
+import { PlayerPhotoModule } from './player_photo/player_photo.module';
 
 @Module({
   imports: [
@@ -39,6 +44,11 @@ import { TrainigAttendanceModule } from './trainig_attendance/trainig_attendance
     PlayerParentModule,
     TeamPlayersModule,
     TrainigAttendanceModule,
+    PaymentsModule,
+    NotificationModule,
+    MatchStatusModule,
+    InjuriesModule,
+    PlayerPhotoModule,
   ],
   controllers: [],
   providers: [],

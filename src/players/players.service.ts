@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,39 +12,27 @@ import { PrismaService } from '../prisma/prisma.service';
 export class PlayersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(createPlayerDto: CreatePlayerDto, photo_url: string) {
-    try {
-      const { user_id, birth_date, position, jersey_no } = createPlayerDto;
-  
-    const numericUserId = Number(user_id);
-  
-
-    if (!photo_url || photo_url.trim() === '') {
-      throw new BadRequestException('Rasm (photo_url) yuborilishi shart');
-    }
-  
-    const existingUser = await this.prismaService.user.findUnique({
-      where: { id: numericUserId },
+  async create(createPlayerDto: CreatePlayerDto) {
+    const userExists = await this.prismaService.user.findUnique({
+      where: { id: createPlayerDto.user_id },
     });
-  
-    if (!existingUser) {
-      throw new NotFoundException(`Foydalanuvchi topilmadi: user_id = ${numericUserId}`);
+
+    if (!userExists) {
+      throw new BadRequestException(
+        `User ID ${createPlayerDto.user_id} topilmadi`,
+      );
     }
-  
+    const birthDate = new Date(createPlayerDto.birth_date);
+
     return this.prismaService.players.create({
       data: {
-        user_id: numericUserId,
-        birth_date: new Date(birth_date),
-        position,
-        jersey_no: Number(jersey_no),
-        photo_url,
+        user_id: createPlayerDto.user_id,
+        birth_date: birthDate,
+        position: createPlayerDto.position,
+        jersey_no: createPlayerDto.jersey_no,
       },
     });
-    } catch (error) {
-      return error;
-    }
   }
-  
 
   async findAll() {
     try {
@@ -49,10 +42,11 @@ export class PlayersService {
         },
       });
     } catch (error) {
-      throw new InternalServerErrorException('O‘yinchilarni olishda xatolik yuz berdi');
+      throw new InternalServerErrorException(
+        'O‘yinchilarni olishda xatolik yuz berdi',
+      );
     }
   }
-  
 
   async findOne(id: number) {
     try {

@@ -1,21 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateTeamPlayerDto } from './dto/create-team_player.dto';
-import { UpdateTeamPlayerDto } from './dto/update-team_player.dto';
+import { CreateMatchStatusDto } from './dto/create-match_status.dto';
+import { UpdateMatchStatusDto } from './dto/update-match_status.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class TeamPlayersService {
+export class MatchStatusService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(dto: CreateTeamPlayerDto) {
+  async create(dto: CreateMatchStatusDto) {
     try {
-      const { team_id, player_id, position } = dto;
+      const { match_id, player_id, goals, assists, yellow_cards, red_cards } =
+        dto;
 
-      const team = await this.prismaService.teams.findUnique({
-        where: { id: team_id },
+      const team = await this.prismaService.matches.findUnique({
+        where: { id: match_id },
       });
       if (!team) {
-        throw new NotFoundException(`Jamoa topilmadi: team_id = ${team_id}`);
+        throw new NotFoundException(`Jamoa topilmadi: match_id = ${match_id}`);
       }
 
       const player = await this.prismaService.players.findUnique({
@@ -27,11 +28,14 @@ export class TeamPlayersService {
         );
       }
 
-      return this.prismaService.team_Players.create({
+      return this.prismaService.match_Status.create({
         data: {
-          team_id,
+          match_id,
           player_id,
-          position,
+          goals,
+          assists,
+          yellow_cards,
+          red_cards,
         },
       });
     } catch (error) {
@@ -41,9 +45,9 @@ export class TeamPlayersService {
 
   async findAll() {
     try {
-      return await this.prismaService.team_Players.findMany({
+      return await this.prismaService.match_Status.findMany({
         include: {
-          team: true,
+          match: true,
           player: true,
         },
       });
@@ -54,7 +58,7 @@ export class TeamPlayersService {
 
   async findOne(id: number) {
     try {
-      const user = await this.prismaService.team_Players.findUnique({
+      const user = await this.prismaService.match_Status.findUnique({
         where: { id },
       });
       if (!user) {
@@ -66,11 +70,11 @@ export class TeamPlayersService {
     }
   }
 
-  async update(id: number, updateTeamPlayerDto: UpdateTeamPlayerDto) {
+  async update(id: number, updateMatchStatusDto: UpdateMatchStatusDto) {
     try {
-      return await this.prismaService.team_Players.update({
+      return await this.prismaService.match_Status.update({
         where: { id },
-        data: updateTeamPlayerDto,
+        data: updateMatchStatusDto,
       });
     } catch (error) {
       return error;
@@ -79,14 +83,14 @@ export class TeamPlayersService {
 
   async remove(id: number) {
     try {
-      const existingUser = await this.prismaService.team_Players.findUnique({
+      const existingUser = await this.prismaService.match_Status.findUnique({
         where: { id },
       });
 
       if (!existingUser) {
         return { error: 'Foydalanuvchi topilmadi' };
       }
-      return await this.prismaService.team_Players.delete({ where: { id } });
+      return await this.prismaService.match_Status.delete({ where: { id } });
     } catch (error) {
       return error;
     }
