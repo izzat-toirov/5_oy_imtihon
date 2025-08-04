@@ -64,9 +64,18 @@ export class PlayersService {
 
   async update(id: number, updatePlayerDto: UpdatePlayerDto) {
     try {
-      return await this.prismaService.players.update({
+      const player = await this.prismaService.players.findUnique({ where: { id } });
+
+      if (!player) {
+        throw new NotFoundException(`O‘yinchi topilmadi: id = ${id}`);
+      }
+
+      return this.prismaService.players.update({
         where: { id },
-        data: updatePlayerDto,
+        data: {
+          ...updatePlayerDto,
+          birth_date: updatePlayerDto.birth_date ? new Date(updatePlayerDto.birth_date) : undefined,
+        },
       });
     } catch (error) {
       return error;

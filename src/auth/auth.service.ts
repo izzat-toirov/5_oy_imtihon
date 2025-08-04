@@ -200,28 +200,28 @@ export class AuthService {
 
   async resetPasswordWithConfirm(dto: ResetPasswordDto) {
     const { token, password, confirmPassword } = dto;
-  
+
     if (!token) {
       throw new BadRequestException('Token topilmadi');
     }
-  
+
     if (password !== confirmPassword) {
       throw new BadRequestException('Parollar mos emas');
     }
-  
+
     const user = await this.prismaService.user.findFirst({
       where: {
         resetPasswordToken: token,
         resetPasswordTokenExpiry: { gt: new Date() },
       },
     });
-  
+
     if (!user) {
       throw new NotFoundException('Token noto‘g‘ri yoki muddati o‘tgan');
     }
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
-  
+
     await this.prismaService.user.update({
       where: { id: user.id },
       data: {
@@ -230,11 +230,9 @@ export class AuthService {
         resetPasswordTokenExpiry: null,
       },
     });
-  
+
     return { message: 'Parol muvaffaqiyatli o‘zgartirildi' };
   }
-  
-  
 
   async sendResetPasswordToken(email: string) {
     if (!email) {
@@ -259,12 +257,11 @@ export class AuthService {
         resetPasswordTokenExpiry: expiry,
       },
     });
+    console.log('User ID:', user.id);
+    console.log('Token:', token);
+    console.log('Expiry:', expiry);
 
     const resetUrl = `${process.env.FRONTEND_URL}?token=${token}`;
-    console.log(process.env.FRONTEND_URL);
-    
-    console.log(resetUrl);
-    
 
     await this.mailService.sendResetPasswordEmail(user, resetUrl);
 
