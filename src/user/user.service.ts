@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto, UserRole } from './dto/create-user.dto';
@@ -104,13 +105,27 @@ export class UserService {
     }
   }
 
-  async findAll() {
+  async findAll(filter: { full_name?: string; role?: string }) {
     try {
-      return await this.prismaService.user.findMany();
+      const where: any = {};
+  
+      if (filter.full_name) {
+        where.full_name = {
+          contains: filter.full_name,
+          mode: 'insensitive',
+        };
+      }
+  
+      if (filter.role) {
+        where.role = filter.role;
+      }
+  
+      return await this.prismaService.user.findMany({ where });
     } catch (error) {
-      return error;
+      throw new InternalServerErrorException('Foydalanuvchilarni olishda xatolik yuz berdi');
     }
   }
+  
 
   async findOne(id: number) {
     try {

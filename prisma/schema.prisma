@@ -293,3 +293,13 @@ model Player_Photo {
 
   @@map("player_Photo")
 }
+
+model Age_Group_Fess {
+  id          Int     @id @default(autoincrement())
+  age_group   String  @db.VarChar(10)
+  min_age     Int
+  max_age     Int
+  monthly_fee Decimal
+
+  @@map("age_group_fess")
+}

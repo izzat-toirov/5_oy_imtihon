@@ -43,6 +43,9 @@ export class NotificationService {
 
   async findAll() {
     try {
+      await this.prismaService.notification.updateMany({
+        data: { is_read: true },
+      });
       return await this.prismaService.notification.findMany({
         include: {
           user: true,
@@ -50,24 +53,29 @@ export class NotificationService {
       });
     } catch (error) {
       throw new InternalServerErrorException(
-        'O‘yinchilarni olishda xatolik yuz berdi',
+        'Bildirishnomalarni olishda xatolik yuz berdi',
       );
     }
   }
+  
 
   async findOne(id: number) {
     try {
-      const user = await this.prismaService.notification.findUnique({
-        where: { id },
+      await this.prismaService.notification.updateMany({
+        data: { is_read: true },
       });
-      if (!user) {
-        return { error: 'Foydalanuvchi topilmadi' };
+      const notification = await this.prismaService.notification.findFirst({
+        where: {id,},
+      });
+      if (!notification) {
+        return { error: 'Bildirishnoma topilmadi yoki hali o‘qilmagan' };
       }
-      return user;
+      return notification;
     } catch (error) {
       return error;
     }
   }
+  
 
   async update(id: number, updateNotificationDto: UpdateNotificationDto) {
     try {

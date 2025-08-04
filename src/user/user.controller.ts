@@ -7,15 +7,16 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SigninUserDto } from './dto/signin-user.dto';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { RoleGuard } from '../common/guards/super_admin.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -26,9 +27,18 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @ApiQuery({ name: 'full_name', required: false })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    enum: UserRole,
+  })
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(
+    @Query('full_name') full_name?: string,
+    @Query('role') role?: string,
+  ) {
+    return this.userService.findAll({ full_name, role });
   }
 
   @Get(':id')
@@ -50,5 +60,4 @@ export class UserController {
   activateUser(@Param('link') link: string) {
     return this.userService.activateUser(link);
   }
-
 }

@@ -20,6 +20,7 @@ import { NotificationModule } from './notification/notification.module';
 import { MatchStatusModule } from './match_status/match_status.module';
 import { InjuriesModule } from './injuries/injuries.module';
 import { PlayerPhotoModule } from './player_photo/player_photo.module';
+import { AgeGroupFessModule } from './age_group_fess/age_group_fess.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PlayerPhotoModule } from './player_photo/player_photo.module';
     MatchStatusModule,
     InjuriesModule,
     PlayerPhotoModule,
+    AgeGroupFessModule,
   ],
   controllers: [],
   providers: [],
