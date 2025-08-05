@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ParentService } from './parent.service';
 import { CreateParentDto } from './dto/create-parent.dto';
 import { UpdateParentDto } from './dto/update-parent.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('parent')
 export class ParentController {
@@ -12,9 +22,10 @@ export class ParentController {
     return this.parentService.create(createParentDto);
   }
 
+  @ApiQuery({ name: 'relation', required: false })
   @Get()
-  findAll() {
-    return this.parentService.findAll();
+  findAll(@Query('relation') relation?: string) {
+    return this.parentService.findAll({ relation });
   }
 
   @Get(':id')

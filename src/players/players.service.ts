@@ -34,9 +34,12 @@ export class PlayersService {
     });
   }
 
-  async findAll() {
+  async findAll(filters: { position?: string }) {
     try {
       const players = await this.prismaService.players.findMany({
+        where: {
+          position: filters.position ? { contains: filters.position, mode: 'insensitive' } : undefined,
+        },
         include: {
           user: true,
         },
@@ -150,4 +153,5 @@ export class PlayersService {
       return error;
     }
   }
+
 }

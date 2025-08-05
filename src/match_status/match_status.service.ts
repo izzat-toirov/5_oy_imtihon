@@ -43,13 +43,17 @@ export class MatchStatusService {
     }
   }
 
-  async findAll() {
+  async findAll(filters: { limit?: string; offset?: string }) {
     try {
+      const take = filters.limit ? parseInt(filters.limit) : 10;
+      const skip = filters.offset ? parseInt(filters.offset) : 0;
       return await this.prismaService.match_Status.findMany({
         include: {
           match: true,
           player: true,
         },
+        take,
+        skip,
       });
     } catch (error) {
       return error;

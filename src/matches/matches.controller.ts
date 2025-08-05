@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { MatchesService } from './matches.service';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('matches')
 export class MatchesController {
@@ -12,9 +22,11 @@ export class MatchesController {
     return this.matchesService.create(createMatchDto);
   }
 
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll() {
-    return this.matchesService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
+    return this.matchesService.findAll({limit, offset});
   }
 
   @Get(':id')

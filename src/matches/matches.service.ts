@@ -9,37 +9,42 @@ export class MatchesService {
 
   async create(createMatchDto: CreateMatchDto) {
     try {
-      const { team_id, opponent, match_Date, location, result } = createMatchDto;
-    const numericUserId = Number(team_id);
-    const existingUser = await this.prismaService.teams.findUnique({
-      where: { id: numericUserId },
-    });
+      const { team_id, opponent, match_Date, location, result } =
+        createMatchDto;
+      const numericUserId = Number(team_id);
+      const existingUser = await this.prismaService.teams.findUnique({
+        where: { id: numericUserId },
+      });
 
-    if (!existingUser) {
-      throw new NotFoundException(
-        `Foydalanuvchi topilmadi: team_id = ${numericUserId}`,
-      );
-    }
-    return this.prismaService.matches.create({
-      data: {
-        team_id,
-        opponent,
-        match_Date: new Date(createMatchDto.match_Date),
-        location,
-        result,
-      },
-    });
+      if (!existingUser) {
+        throw new NotFoundException(
+          `Foydalanuvchi topilmadi: team_id = ${numericUserId}`,
+        );
+      }
+      return this.prismaService.matches.create({
+        data: {
+          team_id,
+          opponent,
+          match_Date: new Date(createMatchDto.match_Date),
+          location,
+          result,
+        },
+      });
     } catch (error) {
       return error;
     }
   }
 
-  async findAll() {
+  async findAll(filters: { limit?: string; offset?: string }) {
     try {
+      const take = filters.limit ? parseInt(filters.limit) : 10;
+      const skip = filters.offset ? parseInt(filters.offset) : 0;
       return await this.prismaService.matches.findMany({
         include: {
           team: true,
         },
+        take,
+        skip,
       });
     } catch (error) {
       return error;

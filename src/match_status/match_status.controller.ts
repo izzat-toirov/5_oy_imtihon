@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { MatchStatusService } from './match_status.service';
 import { CreateMatchStatusDto } from './dto/create-match_status.dto';
 import { UpdateMatchStatusDto } from './dto/update-match_status.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('match-status')
 export class MatchStatusController {
@@ -12,9 +22,11 @@ export class MatchStatusController {
     return this.matchStatusService.create(createMatchStatusDto);
   }
 
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll() {
-    return this.matchStatusService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
+    return this.matchStatusService.findAll({ limit, offset });
   }
 
   @Get(':id')
@@ -23,7 +35,10 @@ export class MatchStatusController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMatchStatusDto: UpdateMatchStatusDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateMatchStatusDto: UpdateMatchStatusDto,
+  ) {
     return this.matchStatusService.update(+id, updateMatchStatusDto);
   }
 

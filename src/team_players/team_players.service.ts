@@ -39,9 +39,12 @@ export class TeamPlayersService {
     }
   }
 
-  async findAll() {
+  async findAll(filters: { position?: string }) {
     try {
       return await this.prismaService.team_Players.findMany({
+        where: {
+          position: filters.position ? { contains: filters.position, mode: 'insensitive' } : undefined,
+        },
         include: {
           team: true,
           player: true,

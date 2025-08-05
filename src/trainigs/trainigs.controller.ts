@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { TrainigsService } from './trainigs.service';
 import { CreateTrainigDto } from './dto/create-trainig.dto';
 import { UpdateTrainigDto } from './dto/update-trainig.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('trainigs')
 export class TrainigsController {
@@ -12,11 +22,12 @@ export class TrainigsController {
     return this.trainigsService.create(createTrainigDto);
   }
 
+  @ApiQuery({ name: 'location', required: false })
   @Get()
-  findAll() {
-    return this.trainigsService.findAll();
+  findAll(@Query('location') location?: string) {
+    return this.trainigsService.findAll({ location });
   }
-
+  
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.trainigsService.findOne(+id);

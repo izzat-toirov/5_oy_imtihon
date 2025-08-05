@@ -41,12 +41,15 @@ export class NotificationService {
     }
   }
 
-  async findAll() {
+  async findAll(filters: { is_read?: boolean }) {
     try {
       await this.prismaService.notification.updateMany({
         data: { is_read: true },
       });
       return await this.prismaService.notification.findMany({
+        where: {
+          is_read: filters.is_read,
+        },
         include: {
           user: true,
         },
@@ -101,18 +104,5 @@ export class NotificationService {
     } catch (error) {
       return error;
     }
-  }
-  async markAsRead(id: number) {
-    const notification = await this.prismaService.notification.findUnique({
-      where: { id },
-    });
-    if (!notification) {
-      throw new NotFoundException('Bildirishnoma topilmadi');
-    }
-
-    return this.prismaService.notification.update({
-      where: { id },
-      data: { is_read: true },
-    });
   }
 }

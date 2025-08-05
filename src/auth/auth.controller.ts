@@ -15,7 +15,7 @@ import { CookieGetter } from '../common/decorators/cookie-geter.decorator';
 import type { Response } from 'express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../common/decorators/roles.decorator';
-import { RoleGuard } from '../common/guards/super_admin.guard';
+import { AdminGuard } from '../common/guards/super_admin.guard';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { ResetPasswordDto } from '../user/dto/resetPasswordDto ';
 import { ForgotPasswordDto } from '../user/dto/forgot-password.dto.ts';
@@ -26,7 +26,7 @@ export class AuthController {
 
   @ApiBearerAuth()
   @Roles('SUPER_ADMIN')
-  @UseGuards(RoleGuard)
+  @UseGuards(AdminGuard)
   @UseGuards(JwtGuard)
   @Post('signUp')
   signUp(@Body() createUserDto: CreateUserDto) {

@@ -31,9 +31,12 @@ export class ParentService {
     }
   }
 
-  async findAll() {
+  async findAll(filters: { relation?: string }) {
     try {
       return await this.prismaService.parents.findMany({
+        where: {
+          relation: filters.relation ? { contains: filters.relation, mode: 'insensitive' } : undefined,
+        },
         include: {
           user: true,
         },

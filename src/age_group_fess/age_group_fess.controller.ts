@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { AgeGroupFessService } from './age_group_fess.service';
 import { CreateAgeGroupFessDto } from './dto/create-age_group_fess.dto';
 import { UpdateAgeGroupFessDto } from './dto/update-age_group_fess.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('age-group-fess')
 export class AgeGroupFessController {
@@ -12,9 +22,10 @@ export class AgeGroupFessController {
     return this.ageGroupFessService.create(createAgeGroupFessDto);
   }
 
+  @ApiQuery({ name: 'age_group', required: false })
   @Get()
-  findAll() {
-    return this.ageGroupFessService.findAll();
+  findAll(@Query('age_group') age_group?: string) {
+    return this.ageGroupFessService.findAll({ age_group });
   }
 
   @Get(':id')
@@ -23,7 +34,10 @@ export class AgeGroupFessController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAgeGroupFessDto: UpdateAgeGroupFessDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateAgeGroupFessDto: UpdateAgeGroupFessDto,
+  ) {
     return this.ageGroupFessService.update(+id, updateAgeGroupFessDto);
   }
 

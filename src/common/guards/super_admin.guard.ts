@@ -8,7 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UserRole } from '../../user/dto/create-user.dto';
 
 @Injectable()
-export class RoleGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -29,23 +29,15 @@ export class RoleGuard implements CanActivate {
     }
 
     const currentRole = currentUser.role;
-
-    // SUPER_ADMIN faqat ADMIN yaratishi mumkin
     if (creatingRole === UserRole.SUPER_ADMIN) {
       throw new ForbiddenException('SUPER_ADMIN yaratish mumkin emas');
     }
-
-    // Agar SUPER_ADMIN ADMIN yaratmoqchi bo‘lsa — OK
     if (creatingRole === UserRole.ADMIN && currentRole !== UserRole.SUPER_ADMIN) {
       throw new ForbiddenException('Faqat SUPER_ADMIN ADMIN yaratishi mumkin');
     }
-
-    // Agar ADMIN COACH yaratmoqchi bo‘lsa — OK
     if (creatingRole === UserRole.COACH && currentRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Faqat ADMIN COACH yaratishi mumkin');
     }
-
-    // Boshqa rollar hech kimni yarata olmaydi
     if (![UserRole.ADMIN, UserRole.COACH, UserRole.PLAYER, UserRole.PARENT].includes(creatingRole)) {
       throw new ForbiddenException('Bu rolni yaratishga ruxsat yo‘q');
     }

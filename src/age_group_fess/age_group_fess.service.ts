@@ -26,9 +26,13 @@ export class AgeGroupFessService {
   }
   
 
-  async findAll() {
+  async findAll(filters: { age_group?: string }) {
     try {
-      return await this.prismaService.age_Group_Fess.findMany();
+      return await this.prismaService.age_Group_Fess.findMany({
+        where: {
+          age_group: filters.age_group ? { contains: filters.age_group, mode: 'insensitive' } : undefined,
+        },
+      });
     } catch (error) {
       throw error;
     }

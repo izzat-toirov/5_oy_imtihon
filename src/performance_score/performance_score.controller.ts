@@ -1,20 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { PerformanceScoreService } from './performance_score.service';
 import { CreatePerformanceScoreDto } from './dto/create-performance_score.dto';
 import { UpdatePerformanceScoreDto } from './dto/update-performance_score.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('performance-score')
 export class PerformanceScoreController {
-  constructor(private readonly performanceScoreService: PerformanceScoreService) {}
+  constructor(
+    private readonly performanceScoreService: PerformanceScoreService,
+  ) {}
 
   @Post()
   create(@Body() createPerformanceScoreDto: CreatePerformanceScoreDto) {
     return this.performanceScoreService.create(createPerformanceScoreDto);
   }
 
+  @ApiQuery({ name: 'notes', required: false })
   @Get()
-  findAll() {
-    return this.performanceScoreService.findAll();
+  findAll(@Query('notes') notes?: string) {
+    return this.performanceScoreService.findAll({ notes });
   }
 
   @Get(':id')
@@ -23,7 +36,10 @@ export class PerformanceScoreController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePerformanceScoreDto: UpdatePerformanceScoreDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePerformanceScoreDto: UpdatePerformanceScoreDto,
+  ) {
     return this.performanceScoreService.update(+id, updatePerformanceScoreDto);
   }
 

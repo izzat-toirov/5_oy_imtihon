@@ -10,37 +10,51 @@ export class TeamsService {
   async create(createTeamDto: CreateTeamDto) {
     try {
       const { name, coach_id, age_group } = createTeamDto;
-    const numericUserId = Number(coach_id);
-    const existingUser = await this.prismaService.coaches.findUnique({
-      where: { id: numericUserId },
-    });
+      const numericUserId = Number(coach_id);
+      const existingUser = await this.prismaService.coaches.findUnique({
+        where: { id: numericUserId },
+      });
 
-    if (!existingUser) {
-      throw new NotFoundException(
-        `Foydalanuvchi topilmadi: coach_id = ${numericUserId}`,
-      );
-    }
-    return this.prismaService.teams.create({
-      data: {
-        name,
-        coach_id,
-        age_group,
-      },
-    });
+      if (!existingUser) {
+        throw new NotFoundException(
+          `Foydalanuvchi topilmadi: coach_id = ${numericUserId}`,
+        );
+      }
+      return this.prismaService.teams.create({
+        data: {
+          name,
+          coach_id,
+          age_group,
+        },
+      });
     } catch (error) {
       return error;
     }
   }
 
-  async findAll() {
+  async findAll(filters: {
+    age_group?: string;
+    limit?: string;
+    offset?: string;
+  }) {
     try {
+      const take = filters.limit ? parseInt(filters.limit) : 10;
+      const skip = filters.offset ? parseInt(filters.offset) : 0;
+
       return await this.prismaService.teams.findMany({
+        where: {
+          age_group: filters.age_group
+            ? { contains: filters.age_group, mode: 'insensitive' }
+            : undefined,
+        },
         include: {
           coach: true,
         },
+        take,
+        skip,
       });
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 

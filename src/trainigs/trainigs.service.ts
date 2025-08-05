@@ -23,10 +23,10 @@ export class TrainigsService {
       return this.prismaService.trainigs.create({
         data: {
           team_id: numericUserId,
-          date: new Date('2025-08-05T00:00:00'),
-          time: new Date('2025-08-05T15:30:00'),
-          location: 'Toshkent, Chilonzor sport zali',
-          topic: 'Hujum taktikalari',
+          date: new Date(),
+          time: new Date(),
+          location,
+          topic,
         },
       });
     } catch (error) {
@@ -34,9 +34,12 @@ export class TrainigsService {
     }
   }
 
-  async findAll() {
+  async findAll(filters: { location?: string }) {
     try {
       return await this.prismaService.trainigs.findMany({
+        where: {
+          location: filters.location ? { contains: filters.location, mode: 'insensitive' } : undefined,
+        },
         include: {
           team: true,
         },

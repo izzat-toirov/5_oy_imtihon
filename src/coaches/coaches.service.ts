@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCoachDto } from './dto/create-coach.dto';
 import { UpdateCoachDto } from './dto/update-coach.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoachesService {
@@ -10,37 +11,47 @@ export class CoachesService {
   async create(createCoachDto: CreateCoachDto) {
     try {
       const { user_id, license_no, experiense } = createCoachDto;
-    const numericUserId = Number(user_id);
-    const existingUser = await this.prismaService.user.findUnique({
-      where: { id: numericUserId },
-    });
+      const numericUserId = Number(user_id);
+      const existingUser = await this.prismaService.user.findUnique({
+        where: { id: numericUserId },
+      });
 
-    if (!existingUser) {
-      throw new NotFoundException(
-        `Foydalanuvchi topilmadi: user_id = ${numericUserId}`,
-      );
-    }
-    return this.prismaService.coaches.create({
-      data: {
-        user_id: numericUserId,
-        license_no,
-        experiense,
-      },
-    });
+      if (!existingUser) {
+        throw new NotFoundException(
+          `Foydalanuvchi topilmadi: user_id = ${numericUserId}`,
+        );
+      }
+      return this.prismaService.coaches.create({
+        data: {
+          user_id: numericUserId,
+          license_no,
+          experiense,
+        },
+      });
     } catch (error) {
       return error;
     }
   }
 
-  async findAll() {
+  async findAll(filters: { license_no?: string }) {
     try {
-      return await this.prismaService.players.findMany({
+      return await this.prismaService.coaches.findMany({
+        where: {
+          license_no: filters.license_no
+            ? {
+                contains: filters.license_no,
+                mode: 'insensitive',
+              }
+            : undefined,
+        },
         include: {
           user: true,
+          Teams: true,
+          Performance_Score: true,
         },
       });
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
@@ -83,4 +94,38 @@ export class CoachesService {
       return error;
     }
   }
+
+  async findMyPlayers(userId: number) {
+    const coach = await this.prismaService.coaches.findUnique({
+      where: {
+        user_id: userId,
+      },
+      include: {
+        Teams: {
+          include: {
+            Team_Players: {
+              include: {
+                player: {
+                  include: {
+                    user: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  
+    if (!coach) {
+      throw new NotFoundException('Coach topilmadi');
+    }
+  
+    const allPlayers = coach.Teams.flatMap(team =>
+      team.Team_Players.map(tp => tp.player),
+    );
+  
+    return allPlayers;
+  }
+  
 }

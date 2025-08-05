@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('teams')
 export class TeamsController {
@@ -12,9 +22,16 @@ export class TeamsController {
     return this.teamsService.create(createTeamDto);
   }
 
+  @ApiQuery({ name: 'age_group', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll() {
-    return this.teamsService.findAll();
+  findAll(
+    @Query('age_group') age_group?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.teamsService.findAll({ age_group, limit, offset });
   }
 
   @Get(':id')

@@ -70,7 +70,7 @@ model Players {
 
 model Coaches {
   id         Int    @id @default(autoincrement())
-  user_id    Int
+  user_id    Int    @unique
   license_no String @db.VarChar(50)
   experiense String @db.VarChar(255)
 
@@ -233,7 +233,6 @@ model Payments {
 
   @@map("payments")
 }
-
 
 model Notification {
   id      Int     @id @default(autoincrement())

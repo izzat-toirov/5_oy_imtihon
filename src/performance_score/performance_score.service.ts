@@ -60,9 +60,12 @@ export class PerformanceScoreService {
   }
   
 
-  async findAll() {
+  async findAll(filters: { notes?: string }) {
     try {
       return await this.prismaService.performance_Score.findMany({
+        where: {
+          notes: filters.notes ? { contains: filters.notes, mode: 'insensitive' } : undefined,
+        },
         include: {
           player: true,
           coach: true

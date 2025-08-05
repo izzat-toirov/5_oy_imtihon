@@ -8,11 +8,12 @@ import {
   Delete,
   ParseIntPipe,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 
 @Controller('notification')
 export class NotificationController {
@@ -23,9 +24,10 @@ export class NotificationController {
     return this.notificationService.create(createNotificationDto);
   }
 
+  @ApiQuery({ name: 'is_read', required: false, type: Boolean })
   @Get()
-  findAll() {
-    return this.notificationService.findAll();
+  findAll(@Query('is_read') is_read?: boolean) {
+    return this.notificationService.findAll({ is_read });
   }
 
   @Get(':id')
@@ -44,13 +46,5 @@ export class NotificationController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.notificationService.remove(+id);
-  }
-
-  @Patch(':id/read')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Bildirishnomani o‘qilgan deb belgilash' })
-  @ApiParam({ name: 'id', type: Number })
-  async markAsRead(@Param('id', ParseIntPipe) id: number) {
-    return this.notificationService.markAsRead(id);
   }
 }

@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { TeamPlayersService } from './team_players.service';
 import { CreateTeamPlayerDto } from './dto/create-team_player.dto';
 import { UpdateTeamPlayerDto } from './dto/update-team_player.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('team-players')
 export class TeamPlayersController {
@@ -12,9 +22,10 @@ export class TeamPlayersController {
     return this.teamPlayersService.create(createTeamPlayerDto);
   }
 
+  @ApiQuery({ name: 'position', required: false })
   @Get()
-  findAll() {
-    return this.teamPlayersService.findAll();
+  findAll(@Query('position') position?: string) {
+    return this.teamPlayersService.findAll({ position });
   }
 
   @Get(':id')
@@ -23,7 +34,10 @@ export class TeamPlayersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTeamPlayerDto: UpdateTeamPlayerDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateTeamPlayerDto: UpdateTeamPlayerDto,
+  ) {
     return this.teamPlayersService.update(+id, updateTeamPlayerDto);
   }
 
