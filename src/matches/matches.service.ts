@@ -90,4 +90,34 @@ export class MatchesService {
       return error;
     }
   }
+
+  async getMatchStatus(matchId: number) {
+    const match = await this.prismaService.matches.findUnique({
+      where: { id: matchId },
+    });
+
+    if (!match) {
+      throw new NotFoundException(`O‘yin topilmadi: id = ${matchId}`);
+    }
+
+    const statusList = await this.prismaService.match_Status.findMany({
+      where: { match_id: matchId },
+      include: {
+        player: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return statusList.map((status) => ({
+      player_id: status.player_id,
+      full_name: status.player.user.full_name,
+      goals: status.goals,
+      assists: status.assists,
+      yellow_cards: status.yellow_cards,
+      red_cards: status.red_cards,
+    }));
+  }
 }

@@ -11,6 +11,7 @@ import {
   Query,
   UseGuards,
   Req,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PlayersService } from './players.service';
 import { CreatePlayerDto } from './dto/create-player.dto';
@@ -21,6 +22,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiParam,
   ApiProperty,
   ApiQuery,
   ApiResponse,
@@ -68,6 +70,24 @@ export class PlayersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.playersService.remove(+id);
+  }
+
+  @Roles('ADMIN', 'PLAYER', 'PARENT')
+  @UseGuards(JwtGuard, SelfOrRolesGuard)
+  @Get(':id/payments')
+  @ApiOperation({ summary: 'O‘yinchining barcha to‘lovlarini olish' })
+  @ApiParam({ name: 'id', type: Number, description: 'Player ID' })
+  getPlayerPayments(@Param('id', ParseIntPipe) id: number) {
+    return this.playersService.getPlayerPayments(id);
+  }
+
+  @Roles('ADMIN', 'PLAYER', 'PARENT')
+  @UseGuards(JwtGuard, SelfOrRolesGuard)
+  @Get(':id/injuries')
+  @ApiOperation({ summary: 'O‘yinchining jarohat tarixini olish' })
+  @ApiParam({ name: 'id', type: Number, description: 'Player ID' })
+  getPlayerInjuries(@Param('id', ParseIntPipe) id: number) {
+    return this.playersService.getPlayerInjuries(id);
   }
 
 }

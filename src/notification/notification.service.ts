@@ -43,9 +43,6 @@ export class NotificationService {
 
   async findAll(filters: { is_read?: boolean }) {
     try {
-      await this.prismaService.notification.updateMany({
-        data: { is_read: true },
-      });
       return await this.prismaService.notification.findMany({
         where: {
           is_read: filters.is_read,
@@ -60,25 +57,22 @@ export class NotificationService {
       );
     }
   }
-  
 
   async findOne(id: number) {
     try {
-      await this.prismaService.notification.updateMany({
+      const notification = await this.prismaService.notification.update({
+        where: { id },
         data: { is_read: true },
       });
-      const notification = await this.prismaService.notification.findFirst({
-        where: {id,},
-      });
-      if (!notification) {
-        return { error: 'Bildirishnoma topilmadi yoki hali o‘qilmagan' };
-      }
+
       return notification;
     } catch (error) {
-      return error;
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Bildirishnoma topilmadi');
+      }
+      throw new InternalServerErrorException('Xatolik yuz berdi');
     }
   }
-  
 
   async update(id: number, updateNotificationDto: UpdateNotificationDto) {
     try {
@@ -105,4 +99,6 @@ export class NotificationService {
       return error;
     }
   }
+
+  
 }

@@ -48,12 +48,14 @@ model User {
 model Players {
   id         Int      @id @default(autoincrement())
   user_id    Int
+  parent_id  Int?
   birth_date DateTime
   position   String   @db.VarChar(50)
   jersey_no  Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  parent    Parents? @relation(fields: [parent_id], references: [id])
 
   user               User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
   Performance_Score  Performance_Score[]
@@ -165,6 +167,7 @@ model Parents {
   user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   Player_Parents Player_Parents[]
   Payments       Payments[]
+  Players        Players[]
 
   @@map("parents")
 }

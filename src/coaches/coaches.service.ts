@@ -95,37 +95,23 @@ export class CoachesService {
     }
   }
 
-  async findMyPlayers(userId: number) {
-    const coach = await this.prismaService.coaches.findUnique({
-      where: {
-        user_id: userId,
-      },
-      include: {
-        Teams: {
-          include: {
-            Team_Players: {
-              include: {
-                player: {
-                  include: {
-                    user: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  
-    if (!coach) {
-      throw new NotFoundException('Coach topilmadi');
+  async findMyTeams(user_id: number) {
+    try {
+      const coach = await this.prismaService.coaches.findFirst({
+        where: { user_id },
+        include: { Teams: true },
+      });
+
+      if (!coach) {
+        throw new NotFoundException(
+          `Murabbiy topilmadi (user_id = ${user_id})`,
+        );
+      }
+
+      return coach.Teams;
+    } catch (error) {
+      console.error(error); // <-- Bu MUHIM, to‘liq xatolikni ko‘rsatadi
+      throw error;
     }
-  
-    const allPlayers = coach.Teams.flatMap(team =>
-      team.Team_Players.map(tp => tp.player),
-    );
-  
-    return allPlayers;
   }
-  
 }

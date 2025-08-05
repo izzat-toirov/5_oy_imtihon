@@ -97,4 +97,64 @@ export class TeamsService {
       return error;
     }
   }
+
+  // GET /teams/:id/players
+  async getTeamPlayers(id: number) {
+    const team = await this.prismaService.teams.findUnique({
+      where: { id },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Jamoa topilmadi: id = ${id}`);
+    }
+
+    const teamPlayers = await this.prismaService.team_Players.findMany({
+      where: { team_id: id },
+      include: {
+        player: {
+          include: { user: true },
+        },
+      },
+    });
+
+    return teamPlayers.map((tp) => ({
+      id: tp.player.id,
+      position: tp.position,
+      jersey_no: tp.player.jersey_no,
+      birth_date: tp.player.birth_date,
+      user: tp.player.user,
+    }));
+  }
+
+  // GET /teams/:id/matches
+  async getTeamMatches(id: number) {
+    const team = await this.prismaService.teams.findUnique({
+      where: { id },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Jamoa topilmadi: id = ${id}`);
+    }
+
+    return this.prismaService.matches.findMany({
+      where: { team_id: id },
+      orderBy: { match_Date: 'desc' },
+    });
+  }
+
+  // GET /teams/:id/trainings
+  async getTeamTrainings(id: number) {
+    const team = await this.prismaService.teams.findUnique({
+      where: { id },
+    });
+
+    if (!team) {
+      throw new NotFoundException(`Jamoa topilmadi: id = ${id}`);
+    }
+
+    return this.prismaService.trainigs.findMany({
+      where: { team_id: id },
+      orderBy: { date: 'desc' },
+    });
+  }
 }

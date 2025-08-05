@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateParentDto } from './dto/create-parent.dto';
 import { UpdateParentDto } from './dto/update-parent.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreatePlayerDto } from '../players/dto/create-player.dto';
 
 @Injectable()
 export class ParentService {
@@ -23,7 +24,7 @@ export class ParentService {
       return this.prismaService.parents.create({
         data: {
           user_id,
-          relation
+          relation,
         },
       });
     } catch (error) {
@@ -35,7 +36,9 @@ export class ParentService {
     try {
       return await this.prismaService.parents.findMany({
         where: {
-          relation: filters.relation ? { contains: filters.relation, mode: 'insensitive' } : undefined,
+          relation: filters.relation
+            ? { contains: filters.relation, mode: 'insensitive' }
+            : undefined,
         },
         include: {
           user: true,
@@ -85,4 +88,23 @@ export class ParentService {
       return error;
     }
   }
+
+  // async createByParent(parentId: number, dto: CreatePlayerDto) {
+  //   const parent = await this.prismaService.parents.findUnique({
+  //     where: { id: parentId },
+  //   });
+
+  //   if (!parent) {
+  //     throw new NotFoundException('Parent topilmadi');
+  //   }
+
+  //   const player = await this.prismaService.players.create({
+  //     data: {
+  //       ...dto,
+  //       parent_id: parentId,
+  //     },
+  //   });
+
+  //   return player;
+  // }
 }

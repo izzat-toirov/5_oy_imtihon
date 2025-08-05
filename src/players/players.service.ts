@@ -10,35 +10,42 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PlayersService {
+  [x: string]: any;
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createPlayerDto: CreatePlayerDto) {
-    const userExists = await this.prismaService.user.findUnique({
-      where: { id: createPlayerDto.user_id },
-    });
+    try {
+      const userExists = await this.prismaService.user.findUnique({
+        where: { id: createPlayerDto.user_id },
+      });
 
-    if (!userExists) {
-      throw new BadRequestException(
-        `User ID ${createPlayerDto.user_id} topilmadi`,
-      );
+      if (!userExists) {
+        throw new BadRequestException(
+          `User ID ${createPlayerDto.user_id} topilmadi`,
+        );
+      }
+      const birthDate = new Date(createPlayerDto.birth_date);
+
+      return this.prismaService.players.create({
+        data: {
+          user_id: createPlayerDto.user_id,
+          birth_date: birthDate,
+          position: createPlayerDto.position,
+          jersey_no: createPlayerDto.jersey_no,
+        },
+      });
+    } catch (error) {
+      return error;
     }
-    const birthDate = new Date(createPlayerDto.birth_date);
-
-    return this.prismaService.players.create({
-      data: {
-        user_id: createPlayerDto.user_id,
-        birth_date: birthDate,
-        position: createPlayerDto.position,
-        jersey_no: createPlayerDto.jersey_no,
-      },
-    });
   }
 
   async findAll(filters: { position?: string }) {
     try {
       const players = await this.prismaService.players.findMany({
         where: {
-          position: filters.position ? { contains: filters.position, mode: 'insensitive' } : undefined,
+          position: filters.position
+            ? { contains: filters.position, mode: 'insensitive' }
+            : undefined,
         },
         include: {
           user: true,
@@ -154,4 +161,83 @@ export class PlayersService {
     }
   }
 
+  async getPlayerPayments(id: number) {
+    const player = await this.prismaService.players.findUnique({
+      where: { id },
+    });
+
+    if (!player) {
+      throw new NotFoundException(`O‘yinchi topilmadi: id = ${id}`);
+    }
+
+    const payments = await this.prismaService.payments.findMany({
+      where: { player_id: id },
+      orderBy: { payment_date: 'desc' },
+      select: {
+        id: true,
+        amount: true,
+        payment_date: true,
+        method: true,
+        status: true,
+        reference: true,
+        notes: true,
+        prelod: true,
+        createdAt: true,
+        updatedAt: true,
+        parent: {
+          select: {
+            id: true,
+            relation: true,
+          },
+        },
+      },
+    });
+
+    return payments;
+  }
+
+  async getPlayerInjuries(id: number) {
+    const player = await this.prismaService.players.findUnique({
+      where: { id },
+    });
+
+    if (!player) {
+      throw new NotFoundException(`O‘yinchi topilmadi: id = ${id}`);
+    }
+
+    const injuries = await this.prismaService.injuries.findMany({
+      where: { player_id: id },
+      orderBy: { injury_date: 'desc' },
+      select: {
+        id: true,
+        description: true,
+        injury_date: true,
+        recovery_date: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return injuries;
+  }
+
+  async createByParent(parentId: number, dto: CreatePlayerDto) {
+    const parent = await this.prismaService.parents.findUnique({
+      where: { id: parentId },
+    });
+
+    if (!parent) {
+      throw new NotFoundException('Ota-ona topilmadi');
+    }
+
+    const player = await this.prismaService.players.create({
+      data: {
+        ...dto,
+        parent_id: parentId,
+      },
+    });
+
+    return player;
+  }
+  
 }

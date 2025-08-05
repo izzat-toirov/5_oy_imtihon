@@ -29,7 +29,7 @@ export class UserService {
       const superAdmin = await this.prismaService.user.create({
         data: {
           full_name: 'Super Admin',
-          email: 'admin@gmail.com',
+          email: 'superAdmin@gmail.com',
           phone: '+998901112233',
           hashedPassword: await bcrypt.hash('MySecureP@ss1', 10),
           role: Role.SUPER_ADMIN,

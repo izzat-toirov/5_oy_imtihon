@@ -35,7 +35,7 @@ export class TeamPlayersService {
         },
       });
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 
