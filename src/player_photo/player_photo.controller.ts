@@ -77,11 +77,37 @@ export class PlayerPhotoController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('photo_url', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${Math.round(
+            Math.random() * 1e9,
+          )}${extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        player_id: { type: 'integer', example: 1 },
+        photo_url: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   update(
     @Param('id') id: string,
     @Body() updatePlayerPhotoDto: UpdatePlayerPhotoDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.playerPhotoService.update(+id, updatePlayerPhotoDto);
+    const photo_url = file?.filename;
+    return this.playerPhotoService.update(+id, updatePlayerPhotoDto, photo_url);
   }
 
   @Delete(':id')

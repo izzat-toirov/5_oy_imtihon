@@ -14,14 +14,21 @@ async function start() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     app.use(cookieParser());
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: false,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    );
+
     app.setGlobalPrefix('api');
 
     app.useStaticAssets(join(__dirname, '..', 'uploads'), {
       prefix: '/uploads/',
     });
-    // public papkani to‘g‘ridan-to‘g‘ri serve qilish:
-    app.useStaticAssets(join(__dirname, '..', 'public')); // ⬅️ prefix yo‘q!
+    app.useStaticAssets(join(__dirname, '..', 'public'));
 
     const config = new DocumentBuilder()
       .setTitle('inBook Project')

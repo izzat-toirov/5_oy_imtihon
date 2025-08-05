@@ -71,14 +71,24 @@ export class PlayerPhotoService {
     }
   }
 
-  async update(id: number, updatePlayerPhotoDto: UpdatePlayerPhotoDto) {
+  async update(id: number, dto: UpdatePlayerPhotoDto, photo_url?: string) {
     try {
+      const data: any = {};
+      if (typeof dto.player_id === 'number') {
+        data.player_id = dto.player_id;
+      }
+      if (photo_url) {
+        data.photo_url = photo_url;
+      }
+
       return await this.prismaService.player_Photo.update({
         where: { id },
-        data: updatePlayerPhotoDto,
+        data,
       });
     } catch (error) {
-      return error;
+      throw new BadRequestException(
+        error.message || 'O‘yinchi rasmini yangilashda xatolik',
+      );
     }
   }
 

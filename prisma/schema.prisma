@@ -217,7 +217,7 @@ model Payments {
   id           Int      @id @default(autoincrement())
   parent_id    Int
   player_id    Int
-  amout        Decimal
+  amount       Decimal
   payment_date DateTime
   method       String   @db.VarChar(50)
   prelod       String   @db.VarChar(50)
@@ -233,6 +233,7 @@ model Payments {
 
   @@map("payments")
 }
+
 
 model Notification {
   id      Int     @id @default(autoincrement())
@@ -301,5 +302,5 @@ model Age_Group_Fess {
   max_age     Int
   monthly_fee Decimal
 
-  @@map("age_group_fess")
+  @@map("age_Group_Fess")
 }

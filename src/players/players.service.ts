@@ -36,11 +36,37 @@ export class PlayersService {
 
   async findAll() {
     try {
-      return await this.prismaService.players.findMany({
+      const players = await this.prismaService.players.findMany({
         include: {
           user: true,
         },
       });
+      const today = new Date();
+      const results = await Promise.all(
+        players.map(async (player) => {
+          const birthDate = new Date(player.birth_date);
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+          const fee = await this.prismaService.age_Group_Fess.findFirst({
+            where: {
+              min_age: { lte: age },
+              max_age: { gte: age },
+            },
+          });
+          const monthly_fee = fee ? fee.monthly_fee.toNumber() : 0;
+
+          return {
+            ...player,
+            age,
+            monthly_fee,
+          };
+        }),
+      );
+
+      return results;
     } catch (error) {
       throw new InternalServerErrorException(
         'O‘yinchilarni olishda xatolik yuz berdi',
@@ -50,21 +76,47 @@ export class PlayersService {
 
   async findOne(id: number) {
     try {
-      const user = await this.prismaService.players.findUnique({
+      const player = await this.prismaService.players.findUnique({
         where: { id },
+        include: {
+          user: true,
+        },
       });
-      if (!user) {
-        return { error: 'Foydalanuvchi topilmadi' };
+      if (!player) {
+        return { error: 'O‘yinchi topilmadi' };
       }
-      return user;
+      const today = new Date();
+      const birthDate = new Date(player.birth_date);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      const fee = await this.prismaService.age_Group_Fess.findFirst({
+        where: {
+          min_age: { lte: age },
+          max_age: { gte: age },
+        },
+      });
+      const monthly_fee = fee ? fee.monthly_fee.toNumber() : 0;
+
+      return {
+        ...player,
+        age,
+        monthly_fee,
+      };
     } catch (error) {
-      return error;
+      throw new InternalServerErrorException(
+        'O‘yinchini olishda xatolik yuz berdi',
+      );
     }
   }
 
   async update(id: number, updatePlayerDto: UpdatePlayerDto) {
     try {
-      const player = await this.prismaService.user.findUnique({ where: { id } });
+      const player = await this.prismaService.user.findUnique({
+        where: { id },
+      });
 
       if (!player) {
         throw new NotFoundException(`O‘yinchi topilmadi: id = ${id}`);
@@ -74,7 +126,9 @@ export class PlayersService {
         where: { id },
         data: {
           ...updatePlayerDto,
-          birth_date: updatePlayerDto.birth_date ? new Date(updatePlayerDto.birth_date) : undefined,
+          birth_date: updatePlayerDto.birth_date
+            ? new Date(updatePlayerDto.birth_date)
+            : undefined,
         },
       });
     } catch (error) {

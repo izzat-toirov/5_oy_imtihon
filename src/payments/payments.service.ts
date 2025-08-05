@@ -6,119 +6,139 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class PaymentsService {
   constructor(private readonly prismaService: PrismaService) {}
-  async create(createPaymentDto: CreatePaymentDto) {
-    try {
-      const {
+
+  async create(dto: CreatePaymentDto) {
+    const { parent_id, player_id, payment_date, amount, ...rest } = dto;
+  
+    const player = await this.prismaService.players.findUnique({
+      where: { id: player_id },
+    });
+    if (!player) throw new NotFoundException(`O'yinchi topilmadi: ${player_id}`);
+  
+    const parent = await this.prismaService.parents.findUnique({
+      where: { id: parent_id },
+    });
+    if (!parent) throw new NotFoundException(`Ota-ona topilmadi: ${parent_id}`);
+  
+    return this.prismaService.payments.create({
+      data: {
         parent_id,
         player_id,
-        amout,
-        payment_date,
-        method,
-        prelod,
-        reference,
-        status,
-        notes,
-      } = createPaymentDto;
+        amount: Number(amount),
+        payment_date: new Date(payment_date),
+        ...rest,
+      },
+    });
+  }
 
-      const numericPlayerId = Number(player_id);
-      const numericParentId = Number(parent_id);
-
-      const existingPlayer = await this.prismaService.players.findUnique({
-        where: { id: numericPlayerId },
-      });
-
-      if (!existingPlayer) {
-        throw new NotFoundException(
-          `Foydalanuvchi topilmadi: player_id = ${numericPlayerId}`,
+  async findAll() {
+    const payments = await this.prismaService.payments.findMany({
+      include: {
+        player: { include: { user: true } },
+        parent: true,
+      },
+    });
+    const results = await Promise.all(
+      payments.map(async (payment) => {
+        const expected_fee = await this.getExpectedFeeByBirthDate(
+          payment.player.birth_date,
         );
-      }
-
-      const existingCoach = await this.prismaService.parents.findUnique({
-        where: { id: numericParentId },
-      });
-
-      if (!existingCoach) {
-        throw new NotFoundException(
-          `Foydalanuvchi topilmadi: parent_id = ${numericParentId}`,
-        );
-      }
-      const newPerformance = await this.prismaService.payments.create({
-        data: {
-          parent_id: numericParentId,
-          player_id: numericPlayerId,
-          amout,
-          payment_date: new Date(payment_date),
-          method,
-          prelod,
-          reference,
-          status,
-          notes,
+        const paid = Number(payment.amount);
+        const balance = paid - expected_fee;
+  
+        return {
+          ...payment,
+          expected_fee,
+          paid_amount: paid,
+          remaining_balance: balance,
+        };
+      }),
+    );
+  
+    return results;
+  }
+  
+  
+  async findOne(id: number) {
+    try {
+      const payment = await this.prismaService.payments.findUnique({
+        where: { id },
+        include: {
+          player: true,
+          parent: true,
         },
       });
-
-      return newPerformance;
+  
+      if (!payment) {
+        throw new NotFoundException('To‘lov topilmadi');
+      }
+  
+      const expected_fee = await this.getExpectedFeeByBirthDate(
+        payment.player.birth_date,
+      );
+  
+      const paid = Number(payment.amount);
+      const balance = paid - expected_fee;
+  
+      return {
+        ...payment,
+        expected_fee,
+        paid_amount: paid,
+        remaining_balance: balance,
+      };
     } catch (error) {
       throw error;
     }
   }
+  
 
-  async findAll() {
-    try {
-      return await this.prismaService.payments.findMany({
-        include: {
-          parent: true,
-          player: true,
-        },
-      });
-    } catch (error) {
-      return error;
-    }
-  }
-
-  async findOne(id: number) {
-    try {
-      const user = await this.prismaService.payments.findUnique({
-        where: { id },
-      });
-      if (!user) {
-        return { error: 'Foydalanuvchi topilmadi' };
-      }
-      return user;
-    } catch (error) {
-      return error;
-    }
-  }
-
-  async update(
-    id: number,
-    updatePaymentDto: UpdatePaymentDto,
-  ) {
+  async update(id: number, updatePaymentDto: UpdatePaymentDto) {
     try {
       return await this.prismaService.payments.update({
         where: { id },
         data: updatePaymentDto,
       });
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
   async remove(id: number) {
     try {
-      const existingUser =
-        await this.prismaService.payments.findUnique({
-          where: { id },
-        });
+      const existing = await this.prismaService.payments.findUnique({
+        where: { id },
+      });
 
-      if (!existingUser) {
-        return { error: 'Foydalanuvchi topilmadi' };
+      if (!existing) {
+        throw new NotFoundException('To‘lov topilmadi');
       }
+
       return await this.prismaService.payments.delete({
         where: { id },
       });
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
+  private async getExpectedFeeByBirthDate(birthDate: Date): Promise<number> {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+  
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+  
+    const fee = await this.prismaService.age_Group_Fess.findFirst({
+      where: {
+        min_age: { lte: age },
+        max_age: { gte: age },
+      },
+    });
+  
+    return fee ? fee.monthly_fee.toNumber() : 0;
+  }
+  
 }

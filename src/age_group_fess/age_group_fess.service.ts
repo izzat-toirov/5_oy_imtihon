@@ -1,26 +1,74 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateAgeGroupFessDto } from './dto/create-age_group_fess.dto';
 import { UpdateAgeGroupFessDto } from './dto/update-age_group_fess.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AgeGroupFessService {
-  create(createAgeGroupFessDto: CreateAgeGroupFessDto) {
-    return 'This action adds a new ageGroupFess';
+  constructor(private readonly prismaService: PrismaService) {}
+  async create(createAgeGroupFessDto: CreateAgeGroupFessDto) {
+    try {
+      const { age_group, max_age, min_age, monthly_fee } = createAgeGroupFessDto;
+  
+      return await this.prismaService.age_Group_Fess.create({
+        data: {
+          age_group,
+          max_age,
+          min_age,
+          monthly_fee,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        error.message || 'Yosh guruhi to‘lovi yaratishda xatolik',
+      );
+    }
+  }
+  
+
+  async findAll() {
+    try {
+      return await this.prismaService.age_Group_Fess.findMany();
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findAll() {
-    return `This action returns all ageGroupFess`;
+  async findOne(id: number) {
+    try {
+      const age_Group_Fess = await this.prismaService.age_Group_Fess.findUnique({ where: { id } });
+      if (!age_Group_Fess) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return age_Group_Fess;
+    } catch (error) {
+      return error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} ageGroupFess`;
+  async update(id: number, updateAgeGroupFessDto: UpdateAgeGroupFessDto) {
+    try {
+      return await this.prismaService.age_Group_Fess.update({
+        where: { id },
+        data: updateAgeGroupFessDto,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
-  update(id: number, updateAgeGroupFessDto: UpdateAgeGroupFessDto) {
-    return `This action updates a #${id} ageGroupFess`;
-  }
+  async remove(id: number) {
+    try {
+      const existingage_Group_Fess = await this.prismaService.age_Group_Fess.findUnique({
+        where: { id },
+      });
 
-  remove(id: number) {
-    return `This action removes a #${id} ageGroupFess`;
+      if (!existingage_Group_Fess) {
+        return { error: 'Foydalanuvchi topilmadi' };
+      }
+      return await this.prismaService.age_Group_Fess.delete({ where: { id } });
+    } catch (error) {
+      return error;
+    }
   }
 }
