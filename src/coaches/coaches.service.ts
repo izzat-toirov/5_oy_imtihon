@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCoachDto } from './dto/create-coach.dto';
 import { UpdateCoachDto } from './dto/update-coach.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,6 +19,22 @@ export class CoachesService {
       if (!existingUser) {
         throw new NotFoundException(
           `Foydalanuvchi topilmadi: user_id = ${numericUserId}`,
+        );
+      }
+
+      if (existingUser.role !== 'COACH') {
+        throw new BadRequestException(
+          `Foydalanuvchi COACH roli bilan bog‘liq emas: user_id = ${numericUserId}`,
+        );
+      }
+
+      const existingCoach = await this.prismaService.coaches.findUnique({
+        where: { user_id: numericUserId },
+      });
+
+      if (existingCoach) {
+        throw new BadRequestException(
+          `Ushbu foydalanuvchi allaqachon coach sifatida mavjud`,
         );
       }
       return this.prismaService.coaches.create({
@@ -92,26 +108,6 @@ export class CoachesService {
       return await this.prismaService.coaches.delete({ where: { id } });
     } catch (error) {
       return error;
-    }
-  }
-
-  async findMyTeams(user_id: number) {
-    try {
-      const coach = await this.prismaService.coaches.findFirst({
-        where: { user_id },
-        include: { Teams: true },
-      });
-
-      if (!coach) {
-        throw new NotFoundException(
-          `Murabbiy topilmadi (user_id = ${user_id})`,
-        );
-      }
-
-      return coach.Teams;
-    } catch (error) {
-      console.error(error); // <-- Bu MUHIM, to‘liq xatolikni ko‘rsatadi
-      throw error;
     }
   }
 }

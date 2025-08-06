@@ -59,12 +59,5 @@ export class CoachesController {
   remove(@Param('id') id: string) {
     return this.coachesService.remove(+id);
   }
-
-  @Roles('COACH')
-  @Get('my-teams')
-  @ApiQuery({ name: 'user_id', required: true, type: Number })
-  findMyTeams(@Query('user_id') user_id: string) {
-    return this.coachesService.findMyTeams(Number(user_id));
-  }
   
 }

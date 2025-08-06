@@ -90,4 +90,14 @@ export class PlayersController {
     return this.playersService.getPlayerInjuries(id);
   }
 
+  @Roles('ADMIN')
+  @UseGuards(JwtGuard, SelfOrRolesGuard)
+  @Post('by-parent/:parentId')
+  async createByParent(
+    @Param('parentId', ParseIntPipe) parentId: number,
+    @Body() createPlayerDto: CreatePlayerDto,
+  ) {
+    return this.playersService.createByParent(parentId, createPlayerDto);
+  }
+
 }

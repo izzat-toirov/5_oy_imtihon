@@ -35,11 +35,14 @@ export class MatchesService {
     }
   }
 
-  async findAll(filters: { limit?: string; offset?: string }) {
+  async findAll(filters: { limit?: string; offset?: string, location?:string }) {
     try {
       const take = filters.limit ? parseInt(filters.limit) : 10;
       const skip = filters.offset ? parseInt(filters.offset) : 0;
       return await this.prismaService.matches.findMany({
+        where: {
+          location: filters.location ? { contains: filters.location, mode: 'insensitive' } : undefined,
+        },
         include: {
           team: true,
         },

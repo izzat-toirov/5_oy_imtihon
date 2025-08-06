@@ -13,7 +13,12 @@ import {
 import { MatchesService } from './matches.service';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtGuard } from '../common/guards/jwt.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -33,9 +38,14 @@ export class MatchesController {
   @Roles('ADMIN', 'COACH')
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'offset', required: false })
+  @ApiQuery({ name: 'location', required: false })
   @Get()
-  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
-    return this.matchesService.findAll({ limit, offset });
+  findAll(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Query('location') location?: string
+  ) {
+    return this.matchesService.findAll({ limit, offset, location});
   }
 
   @Roles('ADMIN', 'COACH')

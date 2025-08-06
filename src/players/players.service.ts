@@ -24,6 +24,11 @@ export class PlayersService {
           `User ID ${createPlayerDto.user_id} topilmadi`,
         );
       }
+      if (userExists.role !== 'PARENT') {
+        throw new BadRequestException(
+          `Foydalanuvchi PARENT roli bilan bog‘liq emas: user_id = ${createPlayerDto.user_id}`,
+        );
+      }
       const birthDate = new Date(createPlayerDto.birth_date);
 
       return this.prismaService.players.create({
@@ -224,10 +229,31 @@ export class PlayersService {
   async createByParent(parentId: number, dto: CreatePlayerDto) {
     const parent = await this.prismaService.parents.findUnique({
       where: { id: parentId },
+      include: { user: true },
     });
 
     if (!parent) {
       throw new NotFoundException('Ota-ona topilmadi');
+    }
+
+    if (parent.user.role !== 'PARENT') {
+      throw new BadRequestException(
+        'Ushbu foydalanuvchi "parent" roliga ega emas',
+      );
+    }
+
+    const playerUser = await this.prismaService.user.findUnique({
+      where: { id: dto.user_id },
+    });
+
+    if (!playerUser) {
+      throw new NotFoundException(`User topilmadi: user_id = ${dto.user_id}`);
+    }
+
+    if (playerUser.role !== 'PLAYER') {
+      throw new BadRequestException(
+        `Foydalanuvchi "PLAYER" roliga ega emas: user_id = ${dto.user_id}`,
+      );
     }
 
     const player = await this.prismaService.players.create({
@@ -239,5 +265,4 @@ export class PlayersService {
 
     return player;
   }
-  
 }
