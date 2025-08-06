@@ -3,9 +3,10 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [PrismaModule, JwtModule],
+  imports: [PrismaModule, JwtModule, MailModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

@@ -11,10 +11,13 @@ import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { Role } from '../../generated/prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService,
+    private readonly mailService: MailService
+  ) {}
 
   async createSuperAdmin() {
     try {
@@ -87,7 +90,9 @@ export class UserService {
       const hashedPassword = await bcrypt.hash(password, 10);
       const activation_link = uuidv4();
 
-      return this.prismaService.user.create({
+
+
+      const newUser = await this.prismaService.user.create({
         data: {
           full_name,
           phone,
@@ -98,6 +103,12 @@ export class UserService {
           activation_link,
         },
       });
+
+      await this.mailService.sendMail(newUser);
+      return {
+        message:
+          'Ro‘yxatdan o‘tdingiz. Akkauntni faollashtirish uchun emailni tekshiring.',
+      };
     } catch (error) {
       throw new BadRequestException(
         error.message || 'Foydalanuvchi yaratishda xatolik',

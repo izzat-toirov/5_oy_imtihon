@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { PlayerPhotoService } from './player_photo.service';
 import { PlayerPhotoController } from './player_photo.controller';
 import { PrismaModule } from '../prisma/prisma.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, JwtModule],
   controllers: [PlayerPhotoController],
   providers: [PlayerPhotoService],
   exports: [PlayerPhotoService],

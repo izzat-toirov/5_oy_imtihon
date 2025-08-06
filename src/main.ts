@@ -16,7 +16,10 @@ import { RolesGuard } from './common/guards/roles.guard';
 async function start() {
   try {
     const PORT = process.env.PORT ?? 3030;
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+      bufferLogs: true,
+      logger: WinstonModule.createLogger(winstonConfig),
+    });
     app.useGlobalFilters(new AllExceptionFilter());
     app.use(cookieParser());
     // app.useGlobalGuards(app.get(JwtGuard), app.get(RolesGuard));
@@ -37,7 +40,7 @@ async function start() {
     app.useStaticAssets(join(__dirname, '..', 'public'));
 
     const config = new DocumentBuilder()
-      .setTitle('inBook Project')
+      .setTitle('FootballAcademy Project')
       .setDescription('NestJS RESTful API')
       .setVersion('1.0')
       .addTag(
