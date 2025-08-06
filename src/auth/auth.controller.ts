@@ -21,6 +21,7 @@ import { ResetPasswordDto } from '../user/dto/resetPasswordDto ';
 import { ForgotPasswordDto } from '../user/dto/forgot-password.dto.ts';
 
 @Controller('auth')
+@ApiBearerAuth()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

@@ -17,7 +17,7 @@ export class CreatePaymentDto {
   @IsInt()
   player_id: number;
 
-  @ApiProperty({ example: 250000.50, description: 'To‘lov summasi' })
+  @ApiProperty({ example: 250000, description: 'To‘lov summasi' })
   @IsNumber({}, { message: 'amount is not a valid decimal number.' })
   amount: number;
 

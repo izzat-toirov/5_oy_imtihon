@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { PlayerPhotoService } from './player_photo.service';
 import { CreatePlayerPhotoDto } from './dto/create-player_photo.dto';
@@ -16,16 +17,24 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { JwtGuard } from '../common/guards/jwt.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { SelfOrRolesGuard } from '../common/guards/self.guard';
 
 @Controller('player-photo')
+@ApiBearerAuth()
+@UseGuards(JwtGuard, RolesGuard)
 export class PlayerPhotoController {
   constructor(private readonly playerPhotoService: PlayerPhotoService) {}
 
+  @Roles('ADMIN', 'PLAYER')
   @Post()
   @ApiOperation({ summary: 'Create a new post ✨' })
   @ApiConsumes('multipart/form-data')
@@ -66,16 +75,21 @@ export class PlayerPhotoController {
     return this.playerPhotoService.create(createPlayerPhotoDto, photo_url);
   }
 
+  @Roles('ADMIN')
   @Get()
   findAll() {
     return this.playerPhotoService.findAll();
   }
 
+  @Roles('ADMIN', 'PLAYER', 'PARENT')
+  @UseGuards(SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.playerPhotoService.findOne(+id);
   }
 
+  @Roles('ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Patch(':id')
   @UseInterceptors(
     FileInterceptor('photo_url', {
@@ -110,6 +124,8 @@ export class PlayerPhotoController {
     return this.playerPhotoService.update(+id, updatePlayerPhotoDto, photo_url);
   }
 
+  @Roles('ADMIN')
+  @UseGuards(SelfOrRolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.playerPhotoService.remove(+id);

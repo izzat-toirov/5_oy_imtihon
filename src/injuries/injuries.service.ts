@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateInjuryDto } from './dto/create-injury.dto';
 import { UpdateInjuryDto } from './dto/update-injury.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,35 +12,39 @@ export class InjuriesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(dto: CreateInjuryDto) {
-    const player = await this.prismaService.players.findUnique({
-      where: { id: dto.player_id },
-    });
+    try {
+      const player = await this.prismaService.players.findUnique({
+        where: { id: dto.player_id },
+      });
 
-    if (!player) {
-      throw new NotFoundException('Bunday player mavjud emas');
+      if (!player) {
+        throw new NotFoundException('Bunday player mavjud emas');
+      }
+      const injuryDate = new Date(dto.injury_date);
+      const recoveryDate = new Date(dto.recovery_date);
+
+      if (injuryDate > recoveryDate) {
+        throw new BadRequestException(
+          'Jarohat sanasi tiklanish sanasidan oldin bo‘lishi kerak',
+        );
+      }
+
+      const injury = await this.prismaService.injuries.create({
+        data: {
+          player_id: dto.player_id,
+          description: dto.description,
+          injury_date: injuryDate,
+          recovery_date: recoveryDate,
+        },
+      });
+
+      return {
+        message: 'Jarohat muvaffaqiyatli qo‘shildi',
+        data: injury,
+      };
+    } catch (error) {
+      return error;
     }
-    const injuryDate = new Date(dto.injury_date);
-    const recoveryDate = new Date(dto.recovery_date);
-
-    if (injuryDate > recoveryDate) {
-      throw new BadRequestException(
-        'Jarohat sanasi tiklanish sanasidan oldin bo‘lishi kerak',
-      );
-    }
-
-    const injury = await this.prismaService.injuries.create({
-      data: {
-        player_id: dto.player_id,
-        description: dto.description,
-        injury_date: injuryDate,
-        recovery_date: recoveryDate,
-      },
-    });
-
-    return {
-      message: 'Jarohat muvaffaqiyatli qo‘shildi',
-      data: injury,
-    };
   }
 
   async findAll() {

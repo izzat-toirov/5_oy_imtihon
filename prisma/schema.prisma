@@ -31,7 +31,7 @@ model User {
   is_active                Boolean   @default(false)
   role                     Role      @default(PARENT)
   hashedRefreshToken       String?
-  activation_link          String?   @db.VarChar(255)
+  activation_link          String?   @unique @db.VarChar(255)
   resetPasswordToken       String?   @db.Text
   resetPasswordTokenExpiry DateTime?
 
@@ -55,9 +55,9 @@ model Players {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  parent    Parents? @relation(fields: [parent_id], references: [id])
 
   user               User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  parent    Parents? @relation("ParentToPlayer", fields: [parent_id], references: [id])
   Performance_Score  Performance_Score[]
   Player_Parents     Player_Parents[]
   Team_Players       Team_Players[]
@@ -66,6 +66,7 @@ model Players {
   Match_Status       Match_Status[]
   Injuries           Injuries[]
   Player_Photo       Player_Photo[]
+  parentsId          Int?
 
   @@map("players")
 }
@@ -167,7 +168,7 @@ model Parents {
   user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   Player_Parents Player_Parents[]
   Payments       Payments[]
-  Players        Players[]
+  Players        Players[]        @relation("ParentToPlayer")
 
   @@map("parents")
 }
@@ -297,9 +298,15 @@ model Player_Photo {
   @@map("player_Photo")
 }
 
-model Age_Group_Fess {
-  id          Int     @id @default(autoincrement())
-  age_group   String  @db.VarChar(10)
+enum AgeGroup {
+  KIDS
+  TEENS
+  ADULTS
+}
+
+model AgeGroupFees {
+  id          Int      @id @default(autoincrement())
+  age_group   AgeGroup
   min_age     Int
   max_age     Int
   monthly_fee Decimal

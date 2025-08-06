@@ -39,7 +39,7 @@ export class MatchStatusService {
         },
       });
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 

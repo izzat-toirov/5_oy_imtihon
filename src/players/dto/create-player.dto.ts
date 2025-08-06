@@ -8,6 +8,11 @@ export class CreatePlayerDto {
   @IsInt()
   user_id: number;
 
+  @ApiProperty({ example: 1, description: 'Player ID (foreign key)' })
+  @Type(()=> Number)
+  @IsInt()
+  parent_id?: number;
+
   @ApiProperty({ example: '2005-05-20', description: 'Tug‘ilgan sana (ISO format)' })
   @Transform(({ value }) => new Date(value))
   @IsDate({ message: 'birth_date noto‘g‘ri sana formatida' })

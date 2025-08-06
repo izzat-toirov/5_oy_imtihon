@@ -34,7 +34,7 @@ export class CreateAgeGroupFessDto {
   max_age: number;
 
   @ApiProperty({
-    example: 49.99,
+    example: 250000,
     description: 'Oylik to‘lov',
   })
   @IsNumber({}, { message: 'monthly_fee raqam bo‘lishi kerak' })
