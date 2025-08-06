@@ -37,7 +37,7 @@ async function start() {
     app.useStaticAssets(join(__dirname, '..', 'public'));
 
     const config = new DocumentBuilder()
-      .setTitle('inBook Project')
+      .setTitle('FootballAcademy Project')
       .setDescription('NestJS RESTful API')
       .setVersion('1.0')
       .addTag(

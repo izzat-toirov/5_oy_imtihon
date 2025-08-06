@@ -43,16 +43,21 @@ export class PlayersController {
     return this.playersService.create(createPlayerDto);
   }
 
-  @Roles('ADMIN')
-  @UseGuards(JwtGuard, RolesGuard)
-  @ApiQuery({ name: 'position', required: false })
+  // @Roles('ADMIN')
+  // @UseGuards(JwtGuard, RolesGuard)
+  // @ApiQuery({ name: 'position', required: false })
+  // @Get()
+  // findAll(@Query('position') position?: string) {
+  //   return this.playersService.findAll({ position });
+  // }
+
   @Get()
-  findAll(@Query('position') position?: string) {
-    return this.playersService.findAll({ position });
+  findAll() {
+    return this.playersService.findAll();
   }
 
-  @Roles('ADMIN', 'PLAYER', 'PARENT')
-  @UseGuards(JwtGuard, SelfOrRolesGuard)
+  // @Roles('ADMIN', 'PLAYER', 'PARENT')
+  // @UseGuards(JwtGuard, SelfOrRolesGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.playersService.findOne(+id);
